@@ -123,7 +123,7 @@ export const submitRegistrationRequest = createAsyncThunk(
     </div>
   </div>
 `;
-      await axios.post(`http://localhost:5000/api/sendEmail`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
         email: adminData.email,
         subject: "New Student Registration Request",
         html: adminNotificationHTML,
@@ -237,7 +237,7 @@ export const approveRegistrationRequest = createAsyncThunk(
   </div>
 `;
 
-      await axios.post(`http://localhost:5000/api/sendEmail`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
         email: requestData.email,
         subject: "Registration Approved - Welcome to ChemT",
         html: approvalHTML,
@@ -308,7 +308,7 @@ export const rejectRegistrationRequest = createAsyncThunk(
         </div>
       `;
 
-      await axios.post(`http://localhost:5000/api/sendEmail`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
         email: requestData.email,
         subject: "Registration Request Update",
         html: rejectionHTML,
@@ -584,7 +584,7 @@ export const createAdmin = createAsyncThunk(
           </div>
       `;
 
-      const response = await axios.post(`http://localhost:5000/api/sendEmail`, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
         email,
         subject: "Welcome to ChemT - Admin Access",
         html: adminWelcomeHTML,

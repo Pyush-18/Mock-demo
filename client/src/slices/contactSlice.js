@@ -168,13 +168,13 @@ export const sendContactEmail = createAsyncThunk(
         </html>
       `;
 
-      await axios.post("http://localhost:5000/api/sendEmail", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
         email: "piyushjoshi1812@gmail.com",
         subject: `🔔 New Contact: ${name}`,
         html: adminEmailHTML,
       });
 
-      await axios.post("http://localhost:5000/api/sendEmail", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
         email: email,
         subject: "Message Received! 🚀 - ChemT Support",
         html: userEmailHTML,
