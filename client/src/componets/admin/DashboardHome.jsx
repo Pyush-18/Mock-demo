@@ -1,0 +1,241 @@
+import React, { useEffect } from "react";
+import { useAdmin } from "../../context/AdminContext";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router";
+import { motion } from "motion/react";
+import {
+  FileText,
+  HelpCircle,
+  BrainCircuit,
+  Users,
+  UploadCloud,
+  LayoutDashboard,
+  ArrowRight,
+  Activity,
+  Layers,
+  Sparkles,
+  Loader2,
+} from "lucide-react";
+
+const DashboardHome = () => {
+  const { questionPapers, testAttempts, isAuthenticated, loading } = useAdmin();
+  const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+
+  if (!isAuthenticated || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="animate-spin mx-auto mb-4 text-emerald-500" size={48} />
+          <p className="text-gray-400">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = [
+    {
+      title: "My Question Papers",
+      value: questionPapers?.length || 0,
+      icon: <FileText className="text-emerald-400" size={24} />,
+      color: "from-emerald-500/20 to-emerald-500/5",
+      border: "group-hover:border-emerald-500/50",
+      description: "Tests you created",
+    },
+    {
+      title: "My Questions",
+      value: questionPapers?.reduce((acc, paper) => acc + (paper.questions?.length || 0), 0) || 0,
+      icon: <HelpCircle className="text-cyan-400" size={24} />,
+      color: "from-cyan-500/20 to-cyan-500/5",
+      border: "group-hover:border-cyan-500/50",
+      description: "Across your papers",
+    },
+    {
+      title: "MCQ Tests",
+      value: questionPapers?.filter(p => p.testType === "multiple_choice" || p.testType === "mock").length || 0,
+      icon: <BrainCircuit className="text-purple-400" size={24} />,
+      color: "from-purple-500/20 to-purple-500/5",
+      border: "group-hover:border-purple-500/50",
+      description: "Your MCQ papers",
+    },
+    {
+      title: "Total Attempts",
+      value: testAttempts?.length || 0,
+      icon: <Users className="text-amber-400" size={24} />,
+      color: "from-amber-500/20 to-amber-500/5",
+      border: "group-hover:border-amber-500/50",
+      description: "Student submissions",
+    },
+  ];
+
+  const recentPapers = questionPapers?.slice(0, 3) || [];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+  };
+
+  return (
+    <div className="min-h-screen rounded-2xl text-white bg-[radial-linear(ellipse_at_top,var(--tw-linear-stops))] from-emerald-900/20 via-[#050505] to-[#050505]">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="max-w-7xl mx-auto"
+      >
+        <motion.div variants={itemVariants} className="mb-10 relative">
+          <div className="absolute -top-10 -left-10 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl"></div>
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-linear-to-r from-white to-gray-400">
+            Welcome back, <span className="text-emerald-400">{user?.name}</span>
+          </h2>
+          <p className="text-gray-400 mt-2 flex items-center gap-2">
+            <Sparkles size={16} className="text-emerald-500" />
+            Manage your assessment protocols
+          </p>
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {stats.map((stat, index) => (
+            <div
+              key={index}
+              className={`group relative bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl transition-all duration-300 hover:bg-white/[0.07] hover:transform hover:-translate-y-1 ${stat.border}`}
+            >
+              <div className={`absolute inset-0 bg-linear-to-br ${stat.color} rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+              
+              <div className="relative z-10 flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-400">{stat.title}</p>
+                  <h3 className="text-3xl font-bold text-white mt-2 font-mono tracking-tight">
+                    {stat.value}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1">{stat.description}</p>
+                </div>
+                <div className="p-3 bg-white/5 rounded-xl border border-white/5 shadow-inner">
+                  {stat.icon}
+                </div>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <motion.div variants={itemVariants} className="bg-white/5 backdrop-blur-md rounded-3xl p-8 border border-white/10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+
+            <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-3">
+              <Activity className="text-emerald-400" /> Quick Actions
+            </h3>
+
+            <div className="space-y-4">
+              <button
+                onClick={() => navigate('/admin/upload')}
+                className="w-full group relative flex items-center gap-4 p-4 rounded-xl border border-white/10 bg-white/2 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all duration-300"
+              >
+                <div className="p-3 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
+                  <UploadCloud size={24} />
+                </div>
+                <div className="text-left flex-1">
+                  <p className="font-medium text-white group-hover:text-emerald-400 transition-colors">Upload New Questions</p>
+                  <p className="text-sm text-gray-500">Deploy via CSV protocol</p>
+                </div>
+                <ArrowRight className="text-gray-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" size={20} />
+              </button>
+
+              <button
+                onClick={() => navigate('/admin/papers')}
+                className="w-full group relative flex items-center gap-4 p-4 rounded-xl border border-white/10 bg-white/2 hover:bg-cyan-500/10 hover:border-cyan-500/30 transition-all duration-300"
+              >
+                <div className="p-3 rounded-lg bg-cyan-500/10 text-cyan-400 group-hover:scale-110 transition-transform">
+                  <LayoutDashboard size={24} />
+                </div>
+                <div className="text-left flex-1">
+                  <p className="font-medium text-white group-hover:text-cyan-400 transition-colors">Manage My Papers</p>
+                  <p className="text-sm text-gray-500">Edit your configurations</p>
+                </div>
+                <ArrowRight className="text-gray-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" size={20} />
+              </button>
+
+              <button
+                onClick={() => navigate('/admin/attempts')}
+                className="w-full group relative flex items-center gap-4 p-4 rounded-xl border border-white/10 bg-white/2 hover:bg-purple-500/10 hover:border-purple-500/30 transition-all duration-300"
+              >
+                <div className="p-3 rounded-lg bg-purple-500/10 text-purple-400 group-hover:scale-110 transition-transform">
+                  <Users size={24} />
+                </div>
+                <div className="text-left flex-1">
+                  <p className="font-medium text-white group-hover:text-purple-400 transition-colors">View Attempts</p>
+                  <p className="text-sm text-gray-500">Analyze performance</p>
+                </div>
+                <ArrowRight className="text-gray-600 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" size={20} />
+              </button>
+            </div>
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="bg-white/5 backdrop-blur-md rounded-3xl p-8 border border-white/10">
+            <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-3">
+              <Layers className="text-purple-400" /> My Recent Uploads
+            </h3>
+
+            {recentPapers.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-gray-500 border-2 border-dashed border-white/5 rounded-xl">
+                <FileText size={40} className="mb-4 opacity-50" />
+                <p className="text-center">No papers found<br /><span className="text-sm">Upload your first test!</span></p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentPapers.map((paper) => (
+                  <div
+                    key={paper.id}
+                    className="group flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/5 hover:border-emerald-500/30 transition-all duration-300"
+                  >
+                    <div>
+                      <h4 className="font-medium text-gray-200 group-hover:text-emerald-400 transition-colors">
+                        {paper.testName}
+                      </h4>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                          <HelpCircle size={10} /> {paper.questions?.length || 0} Qs
+                        </span>
+                        <span className="text-xs text-gray-500 border-l border-white/10 pl-3">
+                          {paper.makeTime} mins
+                        </span>
+                      </div>
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-semibold border ${
+                        paper.testType === "physical"
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                          : "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                      }`}
+                    >
+                      {paper.testType}
+                    </span>
+                  </div>
+                ))}
+
+                {questionPapers.length > 3 && (
+                  <button
+                    onClick={() => navigate('/admin/papers')}
+                    className="w-full mt-4 py-3 text-sm text-gray-400 hover:text-white border border-transparent hover:border-white/10 rounded-xl transition-all flex items-center justify-center gap-2 group"
+                  >
+                    View All My Papers <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+                )}
+              </div>
+            )}
+          </motion.div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default DashboardHome;

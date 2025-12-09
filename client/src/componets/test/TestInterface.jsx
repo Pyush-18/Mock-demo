@@ -1,0 +1,640 @@
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import "./TestInterface.css";
+import { useTest } from "../../hooks/useTest";
+import TestNav from "./TestNav";
+import { useNavigate } from "react-router-dom";
+import Calculator from "./Calculator";
+import toast from "react-hot-toast";
+import { AlertOctagon, CheckCircle2, AlertTriangle } from "lucide-react";
+
+const TestInterface = () => {
+  const {
+    attemptId,
+    testId,
+    currentQuestion,
+    currentQuestionIndex,
+    totalQuestions,
+    timeLimit,
+    questions,
+    answers: reduxAnswers,
+    loading,
+    getQuestion,
+    answerQuestion,
+    submitTest,
+    saveAnswerLocally,
+    setCurrentQuestionIndex,
+  } = useTest();
+
+  const navigate = useNavigate();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [markedQuestions, setMarkedQuestions] = useState(new Set());
+  const [answeredQuestions, setAnsweredQuestions] = useState(new Set());
+  const [visitedQuestions, setVisitedQuestions] = useState(new Set());
+  const [fullScreenWarning, setFullScreenWarning] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+
+  const hasInitialized = useRef(false);
+  const isChangingQuestion = useRef(false);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  useEffect(() => {
+    if (timeLimit && timeLeft === 0) {
+      setTimeLeft(timeLimit * 60);
+    }
+  }, [timeLimit]);
+
+  useEffect(() => {
+    if (reduxAnswers && Object.keys(reduxAnswers).length > 0) {
+      setAnswers(reduxAnswers);
+
+      const answered = new Set(
+        Object.keys(reduxAnswers)
+          .map(Number)
+          .filter((idx) => reduxAnswers[idx]?.selectedAnswer)
+      );
+      setAnsweredQuestions(answered);
+
+      const marked = new Set(
+        Object.keys(reduxAnswers)
+          .map(Number)
+          .filter((idx) => reduxAnswers[idx]?.status === "review")
+      );
+      setMarkedQuestions(marked);
+    }
+  }, [reduxAnswers]);
+
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          handleAutoSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+ 
+  useEffect(() => {
+    if (testId && !hasInitialized.current) {
+      console.log("🚀 Loading first question, testId:", testId);
+      hasInitialized.current = true;
+      setCurrentQuestionIndex(0);
+      getQuestion(testId, 0);
+      setVisitedQuestions(new Set([0]));
+    }
+  }, [testId, getQuestion, setCurrentQuestionIndex]);
+
+  useEffect(() => {
+    if (testId && hasInitialized.current && !isChangingQuestion.current) {
+      if (currentIndex !== currentQuestionIndex) {
+        console.log("📝 Fetching question at index:", currentIndex);
+        isChangingQuestion.current = true;
+        setCurrentQuestionIndex(currentIndex);
+        getQuestion(testId, currentIndex);
+        setVisitedQuestions((prev) => new Set([...prev, currentIndex]));
+
+        setTimeout(() => {
+          isChangingQuestion.current = false;
+        }, 100);
+      }
+    }
+  }, [
+    currentIndex,
+    currentQuestionIndex,
+    testId,
+    getQuestion,
+    setCurrentQuestionIndex,
+  ]);
+
+  const handleAnswerSelect = async (option) => {
+    const newAnswers = {
+      ...answers,
+      [currentIndex]: {
+        selectedAnswer: option,
+        status: markedQuestions.has(currentIndex) ? "review" : "answered",
+      },
+    };
+    setAnswers(newAnswers);
+
+    const newAnswered = new Set(answeredQuestions);
+    newAnswered.add(currentIndex);
+    setAnsweredQuestions(newAnswered);
+
+    saveAnswerLocally({
+      questionIndex: currentIndex,
+      selectedAnswer: option,
+      status: markedQuestions.has(currentIndex) ? "review" : "answered",
+    });
+
+    if (attemptId) {
+      try {
+        await answerQuestion({
+          attemptId,
+          questionIndex: currentIndex,
+          selectedAnswer: option,
+          status: markedQuestions.has(currentIndex) ? "review" : "answered",
+        });
+      } catch (err) {
+        console.error("Failed to save answer:", err);
+      }
+    }
+  };
+
+  const goToQuestion = (index) => {
+    setCurrentIndex(index);
+    setVisitedQuestions((prev) => new Set([...prev, index]));
+  };
+
+  const toggleMarkQuestion = async () => {
+    const newMarked = new Set(markedQuestions);
+    const isNowMarked = !newMarked.has(currentIndex);
+
+    if (isNowMarked) {
+      newMarked.add(currentIndex);
+    } else {
+      newMarked.delete(currentIndex);
+    }
+    setMarkedQuestions(newMarked);
+
+    const currentAnswer = answers[currentIndex]?.selectedAnswer || null;
+    const hasAnswer = answeredQuestions.has(currentIndex);
+
+    saveAnswerLocally({
+      questionIndex: currentIndex,
+      selectedAnswer: currentAnswer,
+      status: isNowMarked ? "review" : hasAnswer ? "answered" : "not_visited",
+    });
+
+    if (attemptId) {
+      try {
+        await answerQuestion({
+          attemptId,
+          questionIndex: currentIndex,
+          selectedAnswer: currentAnswer,
+          status: isNowMarked
+            ? "review"
+            : hasAnswer
+            ? "answered"
+            : "not_visited",
+        });
+      } catch (err) {
+        console.error("Failed to update mark status:", err);
+      }
+    }
+  };
+
+  const getQuestionStatus = (index) => {
+    const isAnswered = answeredQuestions.has(index);
+    const isMarked = markedQuestions.has(index);
+    const isVisited = visitedQuestions.has(index);
+
+    if (isAnswered && isMarked) {
+      return "answered-marked";
+    } else if (isMarked && !isAnswered) {
+      return "marked";
+    } else if (isAnswered) {
+      return "answered";
+    } else if (isVisited) {
+      return "visited";
+    }
+    return "not-visited";
+  };
+
+  const handleSubmitTest = useCallback(() => {
+    if (markedQuestions.size > 0) {
+      toast.custom(
+        (t) => (
+          <div
+            className={`${
+              t.visible ? "animate-enter" : "animate-leave"
+            } max-w-md w-full bg-[#0f172a] border border-purple-500/50 shadow-2xl shadow-purple-900/20 pointer-events-auto flex rounded-xl ring-1 ring-black ring-opacity-5`}
+          >
+            <div className="flex-1 w-0 p-4">
+              <div className="flex items-start">
+                <div className="shrink-0 pt-0.5">
+                  <AlertOctagon className="h-10 w-10 text-purple-500" />
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-bold text-purple-400">
+                    Cannot Submit Test
+                  </p>
+                  <p className="mt-1 text-sm text-slate-300">
+                    You have{" "}
+                    <span className="text-white font-bold">
+                      {markedQuestions.size}
+                    </span>{" "}
+                    question(s) marked for review.
+                  </p>
+                  <p className="mt-2 text-xs text-slate-500">
+                    Please unmark them before submitting.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ),
+        { duration: 3000 }
+      );
+      return;
+    }
+
+    setShowSubmitModal(true);
+  }, [markedQuestions]);
+
+  const handleConfirmSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      await submitTest(testId);
+      setShowSubmitModal(false);
+      setShowSuccessPopup(true);
+      toast.success("Test submitted successfully!");
+    } catch (err) {
+      console.error("Error submitting test:", err);
+      toast.error("Failed to submit test. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAutoSubmit = useCallback(async () => {
+    setIsSubmitting(true);
+    try {
+      await submitTest(testId);
+      setShowSuccessPopup(true);
+      alert("Time's up! Your test has been auto-submitted.");
+    } catch (err) {
+      console.error("Error auto-submitting test:", err);
+      alert("Failed to auto-submit test.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [testId, submitTest]);
+
+  const handlePopupClose = () => {
+    setShowSuccessPopup(false);
+    navigate("/dashboard");
+  };
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setFullScreenWarning(true);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  const SuccessPopup = () => {
+    if (!showSuccessPopup) return null;
+    return (
+      <div className="success-popup-overlay">
+        <div className="success-popup">
+          <div className="popup-icon">
+            <div className="checkmark">✓</div>
+          </div>
+          <h2 className="popup-title">Mission Complete</h2>
+          <p className="popup-message">
+            Your assessment has been successfully deployed.
+          </p>
+          <button className="popup-button" onClick={handlePopupClose}>
+            Return to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  if (!attemptId || !testId) {
+    return <div className="test-loading">Initializing Environment...</div>;
+  }
+
+  return (
+    <div className="test-interface">
+      <TestNav
+        formatTime={formatTime}
+        handleSubmitTest={handleSubmitTest}
+        isSubmitting={isSubmitting}
+        currentTest={{ totalQuestions, timeLimit }}
+        timeLeft={timeLeft}
+      />
+
+      {fullScreenWarning && (
+        <div className="warning-modal">
+          <div className="warning-content">
+            <h3>Security Alert</h3>
+            <p>
+              External navigation detected. Continued tab switching will result
+              in automatic session termination.
+            </p>
+            <button onClick={() => setFullScreenWarning(false)}>
+              Acknowledge
+            </button>
+          </div>
+        </div>
+      )}
+
+      <SuccessPopup />
+      {showSubmitModal && (
+        <div className="fixed inset-0 z-9999 flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-[#020617] border border-slate-800 rounded-2xl shadow-2xl shadow-cyan-500/10 overflow-hidden transform transition-all scale-100">
+    
+            <div className="bg-slate-900/50 p-6 border-b border-slate-800 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-full bg-cyan-500/10 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="h-6 w-6 text-cyan-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Submit Test?</h3>
+                <p className="text-sm text-slate-400">
+                  Are you sure you want to finish?
+                </p>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                  <p className="text-xs text-emerald-400 font-medium uppercase mb-1">
+                    Answered
+                  </p>
+                  <p className="text-2xl font-bold text-white">
+                    {answeredQuestions.size}{" "}
+                    <span className="text-sm text-slate-500 font-normal">
+                      / {totalQuestions || 15}
+                    </span>
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20">
+                  <p className="text-xs text-rose-400 font-medium uppercase mb-1">
+                    Unanswered
+                  </p>
+                  <p className="text-2xl font-bold text-white">
+                    {(totalQuestions || 15) - answeredQuestions.size}
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-sm text-slate-400 bg-slate-900 rounded-lg p-3 border border-slate-800 flex gap-2">
+                <AlertTriangle
+                  size={16}
+                  className="text-amber-400 shrink-0 mt-0.5"
+                />
+                <span>Once submitted, you cannot change your answers.</span>
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-900/50 border-t border-slate-800 flex gap-3">
+              <button
+                onClick={() => setShowSubmitModal(false)}
+                className="flex-1 py-3 rounded-xl border border-slate-700 text-slate-300 font-medium hover:bg-slate-800 transition-all"
+              >
+                Go Back
+              </button>
+              <button
+                onClick={handleConfirmSubmit}
+                disabled={isSubmitting}
+                className="flex-1 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? "Submitting..." : "Confirm Submit"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showCalculator && <Calculator />}
+
+      <main className="test-main">
+        <aside className="question-grid">
+          <h3>Navigation Grid</h3>
+          <div className="grid-container">
+            {Array.from({ length: totalQuestions || 15 }, (_, i) => {
+              const status = getQuestionStatus(i);
+              return (
+                <button
+                  key={i}
+                  className={`grid-item ${status} ${
+                    i === currentIndex ? "active" : ""
+                  }`}
+                  onClick={() => goToQuestion(i)}
+                >
+                  {i + 1}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="grid-legend">
+            <div className="legend-item">
+              <div className="legend-color not-visited"></div>
+              <span>Not Visited</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color visited"></div>
+              <span>Not Answered</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color answered"></div>
+              <span>Answered</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color marked"></div>
+              <span>Review (Unanswered)</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color answered-marked"></div>
+              <span>Review (Answered)</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color active"></div>
+              <span>Current</span>
+            </div>
+          </div>
+
+          <div className="calculator-section">
+            <button
+              className="calculator-toggle"
+              onClick={() => setShowCalculator(!showCalculator)}
+            >
+              {showCalculator ? "Deactivate Calculator" : "Activate Calculator"}
+            </button>
+          </div>
+        </aside>
+
+        <section className="question-display">
+          {loading ? (
+            <div className="loading-question">Loading data stream...</div>
+          ) : currentQuestion ? (
+            <div className="question-container">
+              <div className="question-header">
+                <h3>
+                  Question {currentIndex + 1}{" "}
+                  <span
+                    style={{ fontSize: "0.6em", color: "var(--text-muted)" }}
+                  >
+                    / {totalQuestions || 15}
+                  </span>
+                </h3>
+                <button
+                  className={`mark-btn ${
+                    markedQuestions.has(currentIndex) ? "marked" : ""
+                  }`}
+                  onClick={toggleMarkQuestion}
+                >
+                  {markedQuestions.has(currentIndex)
+                    ? "Unmark Review"
+                    : "Mark for Review"}
+                </button>
+              </div>
+
+              <div className="question-content">
+                <div
+                  className={`question-layout ${
+                    currentQuestion.images && currentQuestion.images.length > 0
+                      ? "has-images"
+                      : ""
+                  }`}
+                >
+                  <div className="question-text-section">
+                    <p className="question-text">
+                      {currentQuestion.questionText}
+                    </p>
+                  </div>
+
+                  {currentQuestion.images &&
+                    currentQuestion.images.length > 0 && (
+                      <div className="question-images-section">
+                        <div className="images-grid">
+                          {currentQuestion.images.map((img, idx) => (
+                            <div key={idx} className="image-container">
+                              <img
+                                src={img}
+                                alt={`Diagram ${idx + 1}`}
+                                className="question-image"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                </div>
+
+                <div className="options-container">
+                  {currentQuestion.options &&
+                    currentQuestion.options.map((option, idx) => (
+                      <div
+                        key={idx}
+                        className={`option ${
+                          answers[currentIndex]?.selectedAnswer === option
+                            ? "selected"
+                            : ""
+                        }`}
+                        onClick={() => handleAnswerSelect(option)}
+                      >
+                        <span className="option-label">
+                          {String.fromCharCode(65 + idx)}
+                        </span>
+                        <span className="option-text">{option}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              <div className="question-navigation">
+                <button
+                  className="nav-btn prev"
+                  onClick={() =>
+                    setCurrentIndex((prev) => Math.max(0, prev - 1))
+                  }
+                  disabled={currentIndex === 0}
+                >
+                  Previous
+                </button>
+                <button
+                  className="nav-btn next"
+                  onClick={() =>
+                    setCurrentIndex((prev) =>
+                      Math.min((totalQuestions || 15) - 1, prev + 1)
+                    )
+                  }
+                  disabled={currentIndex === (totalQuestions || 15) - 1}
+                >
+                  Next Question
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="loading-question">No data available</div>
+          )}
+        </section>
+
+        <aside className="test-sidebar">
+          <div className="sidebar-section">
+            <h4>Directives</h4>
+            <ul>
+              <li>Total Queries: {totalQuestions || 15}</li>
+              <li>Time Limit: {timeLimit || 30}m</li>
+              <li>Mandatory submission</li>
+              <li>Free navigation allowed</li>
+            </ul>
+          </div>
+
+          <div className="sidebar-section">
+            <h4>Analytics</h4>
+            <div className="progress-stats">
+              <div className="stat">
+                <span className="stat-label">Answered</span>
+                <span className="stat-value">{answeredQuestions.size}</span>
+              </div>
+              <div className="stat">
+                <span className="stat-label">Review</span>
+                <span
+                  className="stat-value"
+                  style={{
+                    color: markedQuestions.size > 0 ? "#9f7aea" : "white",
+                  }}
+                >
+                  {markedQuestions.size}
+                </span>
+              </div>
+              <div className="stat">
+                <span className="stat-label">Not Answered</span>
+                <span className="stat-value">
+                  {(totalQuestions || 15) - answeredQuestions.size}
+                </span>
+              </div>
+              <div className="stat">
+                <span className="stat-label">Not Visited</span>
+                <span className="stat-value">
+                  {(totalQuestions || 15) - visitedQuestions.size}
+                </span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+  );
+};
+
+export default TestInterface;
