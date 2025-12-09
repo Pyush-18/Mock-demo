@@ -28,11 +28,11 @@ export const createCheckout = createAsyncThunk(
       const plan = { id: planRef.docs[0].id, ...planRef.docs[0].data() };
       const amount = Math.round((plan.price || 0) * 100); 
 
-      console.log("🔵 Calling server API:", `${API_URL}/payment/create-order`);
+      console.log("🔵 Calling server API:", `${API_URL}/api/payment/create-order`);
       console.log("🔵 With data:", { userId, planId, amount });
 
       
-      const response = await axios.post(`${API_URL}/payment/create-order`, {
+      const response = await axios.post(`${API_URL}/api/payment/create-order`, {
         userId,
         planId,
         amount,
@@ -72,7 +72,7 @@ export const verifyPayment = createAsyncThunk(
   ) => {
     try {
       
-      const response = await axios.post(`${API_URL}/payment/verify`, {
+      const response = await axios.post(`${API_URL}/api/payment/verify`, {
         razorpay_payment_id,
         razorpay_order_id,
         razorpay_signature,
