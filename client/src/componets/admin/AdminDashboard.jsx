@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import Sidebar from "./SideBar";
 import UploadCSV from "./UploadCsv";
-import DashboardHome from "./DashBoardHome";
+import DashboardHome from "./DashboardHome";
 import QuestionPapers from "./QuestionPapers";
 import TestAttempts from "./TestAttempts";
 import CategoryManagement from "./CategoryManagement";
