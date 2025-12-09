@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import Sidebar from "./SideBar";
-import UploadCSV from "./UploadCsv";
+import UploadCSV from "./UploadCSV";
 import DashboardHome from "./DashboardHome";
 import QuestionPapers from "./QuestionPapers";
 import TestAttempts from "./TestAttempts";
