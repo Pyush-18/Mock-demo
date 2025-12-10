@@ -107,24 +107,11 @@ export const submitRegistrationRequest = createAsyncThunk(
       <p style="font-size: 15px; color: #475569; margin-bottom: 20px;">
         Please log in to your admin dashboard to approve or reject this request.
       </p>
-      <div style="text-align: center; margin-bottom: 20px;">
-        <a href="${window.location.origin}/admin/student-approval" 
-          style="background-color: #4f46e5; color: white; padding: 12px 28px; border-radius: 10px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 15px; box-shadow: 0px 4px 14px rgba(79, 70, 229, 0.3);">
-          View Dashboard
-        </a>
-      </div>
-      <p style="font-size: 13px; color: #64748b; margin-top: 20px; text-align: center;">
-        Or visit: <a href="${
-          window.location.origin
-        }/admin/student-approval" style="color: #4f46e5; text-decoration: underline;">${
-        window.location.origin
-      }/admin/student-approval</a>
-      </p>
     </div>
   </div>
 `;
       await axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
-        email: adminData.email,
+        to: adminData.email,
         subject: "New Student Registration Request",
         html: adminNotificationHTML,
       });
@@ -238,7 +225,7 @@ export const approveRegistrationRequest = createAsyncThunk(
 `;
 
       await axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
-        email: requestData.email,
+        to: requestData.email,
         subject: "Registration Approved - Welcome to ChemT",
         html: approvalHTML,
       });
@@ -309,7 +296,7 @@ export const rejectRegistrationRequest = createAsyncThunk(
       `;
 
       await axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
-        email: requestData.email,
+        to: requestData.email,
         subject: "Registration Request Update",
         html: rejectionHTML,
       });
@@ -585,7 +572,7 @@ export const createAdmin = createAsyncThunk(
       `;
 
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
-        email,
+        to : email,
         subject: "Welcome to ChemT - Admin Access",
         html: adminWelcomeHTML,
       });

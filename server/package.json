@@ -27,7 +27,7 @@
     "firebase-admin": "^13.6.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
-    "nodemailer": "^7.0.9",
+    "nodemailer": "^7.0.11",
     "razorpay": "^2.9.6",
     "resend": "^6.5.2",
     "stream": "^0.0.3"

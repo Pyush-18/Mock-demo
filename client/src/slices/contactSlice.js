@@ -137,13 +137,6 @@ export const sendContactEmail = createAsyncThunk(
                          </p>
                       </div>
 
-                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 32px;">
-                        <tr>
-                          <td align="center">
-                            <a href="https://chemt.com" style="display: inline-block; background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); color: #ffffff; padding: 14px 32px; font-size: 14px; font-weight: 600; border-radius: 50px; text-decoration: none; box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);">Return to Website</a>
-                          </td>
-                        </tr>
-                      </table>
                     </td>
                   </tr>
 
@@ -169,13 +162,13 @@ export const sendContactEmail = createAsyncThunk(
       `;
 
       await axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
-        email: "piyushjoshi1812@gmail.com",
+        to: import.meta.env.VITE_ADMIN_EMAIL,
         subject: `🔔 New Contact: ${name}`,
         html: adminEmailHTML,
       });
 
       await axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
-        email: email,
+        to: email,
         subject: "Message Received! 🚀 - ChemT Support",
         html: userEmailHTML,
       });

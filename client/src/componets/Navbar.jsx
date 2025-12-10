@@ -23,24 +23,20 @@ const Navbar = () => {
     { name: "Contact", id: "contact", path: "/contact" },
   ];
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const openSignup = params.get("openSignup");
-    console.log("is open signup ", openSignup);
-    if (openSignup) {
-      setShowSignup(true);
-      setShowLogin(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     const openLogin = params.get("openLogin");
+    const openSignup = params.get("openSignup");
+
     if (openLogin) {
       setShowLogin(true);
       setShowSignup(false);
       setShowForgot(false);
+    } else if (openSignup) {
+      setShowSignup(true);
+      setShowLogin(false);
     }
-  },[])
+  }, [location.search]);
+
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location]);
