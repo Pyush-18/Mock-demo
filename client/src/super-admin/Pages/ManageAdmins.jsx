@@ -281,7 +281,8 @@ const ManageAdmins = () => {
               </h1>
             </div>
             <p className="text-slate-500 text-sm pl-1">
-              Control access levels and manage institute admins with registration codes.
+              Control access levels and manage institute admins with
+              registration codes.
             </p>
           </div>
 
@@ -358,7 +359,8 @@ const ManageAdmins = () => {
                   <div className="space-y-4">
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                        <User size={14} className="text-emerald-500" /> Full Name
+                        <User size={14} className="text-emerald-500" /> Full
+                        Name
                       </label>
                       <input
                         type="text"
@@ -374,7 +376,8 @@ const ManageAdmins = () => {
 
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                        <Building2 size={14} className="text-emerald-500" /> Institute Name
+                        <Building2 size={14} className="text-emerald-500" />{" "}
+                        Institute Name
                       </label>
                       <input
                         type="text"
@@ -392,7 +395,8 @@ const ManageAdmins = () => {
 
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                        <Mail size={14} className="text-emerald-500" /> Email Address
+                        <Mail size={14} className="text-emerald-500" /> Email
+                        Address
                       </label>
                       <input
                         type="email"
@@ -409,17 +413,32 @@ const ManageAdmins = () => {
 
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                        <Phone size={14} className="text-emerald-500" /> Phone Number
+                        <Phone size={14} className="text-emerald-500" /> Phone
+                        Number
                       </label>
                       <input
                         type="tel"
                         value={formData.phone}
-                        onChange={(e) =>
-                          setFormData({ ...formData, phone: e.target.value })
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value.replace(
+                            /[^\d\s+()-]/g,
+                            ""
+                          );
+                          setFormData({ ...formData, phone: value });
+                        }}
+                        onKeyPress={(e) => {
+                          const allowedChars = /[\d\s+()-]/;
+                          if (!allowedChars.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        maxLength={20}
                         className="w-full px-4 py-2.5 bg-black/40 border border-white/10 rounded-lg focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 text-white placeholder-slate-600 transition-all"
                         placeholder="+1 (555) 000-0000"
                       />
+                      <p className="text-xs text-slate-400 mt-1">
+                        Format: +91 1234567890
+                      </p>
                     </div>
                   </div>
 
@@ -488,7 +507,8 @@ const ManageAdmins = () => {
                           </span>
                           {detailAdmin.instituteName && (
                             <span className="text-xs text-slate-400 flex items-center gap-1">
-                              <Building2 size={12} /> {detailAdmin.instituteName}
+                              <Building2 size={12} />{" "}
+                              {detailAdmin.instituteName}
                             </span>
                           )}
                         </div>
@@ -511,7 +531,6 @@ const ManageAdmins = () => {
                           Student Registration Onboarding
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    
                           <div className="flex items-start gap-3 p-4 bg-emerald-500/5 rounded-xl border border-emerald-500/20">
                             <Key
                               size={20}
@@ -635,7 +654,6 @@ const ManageAdmins = () => {
                     </div>
 
                     <div className="space-y-6">
-               
                       <div>
                         <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                           Credentials

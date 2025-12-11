@@ -378,7 +378,6 @@ export const verifyRegistrationCode = createAsyncThunk(
         }
       }
 
-      // Return valid code info for initial submission
       return {
         status: "valid",
         admin: {
@@ -414,16 +413,16 @@ export const createAdmin = createAsyncThunk(
       }
 
       const randomPassword = Math.random().toString(36).slice(-8);
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        randomPassword
-      );
+      const registrationCode = generateRegistrationCode();
+      
+      
+      const [userCredential] = await Promise.all([
+        createUserWithEmailAndPassword(auth, email, randomPassword),
+      ]);
+      
       const userId = userCredential.user.uid;
 
-      const registrationCode = generateRegistrationCode();
-      const registrationLink = `${window.location.origin}?code=${registrationCode}&openSignup=true`;
-
+      // Save to Firestore
       await setDoc(doc(db, "users", userId), {
         uid: userId,
         name,
@@ -438,6 +437,7 @@ export const createAdmin = createAsyncThunk(
         createdAt: serverTimestamp(),
       });
 
+      const registrationLink = `${window.location.origin}?code=${registrationCode}&openSignup=true`;
       const resetToken = Math.random().toString(36).slice(-32);
       const resetLink = `${window.location.origin}/reset-password?mode=resetPassword&oobCode=${resetToken}`;
 
@@ -489,25 +489,6 @@ export const createAdmin = createAsyncThunk(
                 </p>`
                     : ""
                 }
-              </div>
-              <p style="font-size: 15px; color: #475569; margin-bottom: 12px;">
-                Please reset your password using the secure link below:
-              </p>
-              <div style="text-align: center; margin-bottom: 20px;">
-                <a href="${resetLink}" 
-                  style="
-                    background-color: #4f46e5;
-                    color: white;
-                    padding: 12px 28px;
-                    border-radius: 10px;
-                    text-decoration: none;
-                    font-weight: 600;
-                    display: inline-block;
-                    font-size: 15px;
-                    box-shadow: 0px 4px 14px rgba(79, 70, 229, 0.3);
-                  ">
-                  Reset Password
-                </a>
               </div>
               <div style="
                 background-color: #ecfdf5;
@@ -571,19 +552,16 @@ export const createAdmin = createAsyncThunk(
           </div>
       `;
 
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
-        to : email,
+      axios.post(`${import.meta.env.VITE_API_URL}/api/sendEmail`, {
+        to: email,
         subject: "Welcome to ChemT - Admin Access",
         html: adminWelcomeHTML,
-      });
+      })
 
-      if (!response.data?.success) {
-        throw new Error("Failed to send welcome email");
-      }
-
+      
       return {
         success: true,
-        message: "Admin created successfully and email sent",
+        message: "Admin created successfully! Welcome email is being sent.",
         admin: {
           id: userId,
           name,
@@ -593,7 +571,7 @@ export const createAdmin = createAsyncThunk(
           instituteName: instituteName || name,
           registrationCode: registrationCode,
           temp_password: randomPassword,
-          createdAt: Date.now(),
+          createdAt: new Date().toISOString(),
         },
       };
     } catch (error) {

@@ -155,6 +155,7 @@ export const AdminProvider = ({ children }) => {
           subject: data.get("subject"),
           subcategory: data.get("subcategory") || null,
         };
+        console.log("tradi daat", payload)
       } else {
         payload = {
           testName: data.testName,
@@ -177,6 +178,7 @@ export const AdminProvider = ({ children }) => {
       toast.success(result.message);
       return result;
     } catch (error) {
+      console.log('failed to upload question ', error)
       const errorMessage = error || "Failed to upload questions";
       toast.error(errorMessage);
       throw error;

@@ -18,7 +18,6 @@ import {
   uploadMultipleToCloudinary,
 } from "../config/cloudinaryUpload";
 
-
 export const uploadCSVQuestions = createAsyncThunk(
   "questions/uploadCSVQuestions",
   async (
@@ -52,14 +51,21 @@ export const uploadCSVQuestions = createAsyncThunk(
 
       if (uploadedViaAI && questions) {
         parsedQuestions = questions.map((q) => ({
-          questionText: q.questionText,
-          options: [q.optionA, q.optionB, q.optionC, q.optionD].filter(Boolean),
-          images: q.images || [],
-          correctAnswer: q.correctAnswer,
+          questionText: q.questionText || "",
+          options: [q.optionA, q.optionB, q.optionC, q.optionD].filter(
+            (opt) => opt !== undefined && opt !== null && opt !== ""
+          ),
+          images: Array.isArray(q.images) ? q.images : [],
+          correctAnswer: q.correctAnswer || "",
           questionLevel: q.questionLevel || "Medium",
-          explanation: q.explanation || null, 
+          ...(q.explanation &&
+            q.explanation.trim() !== "" && {
+              explanation: q.explanation.trim(),
+            }),
         }));
-      } else {
+      }
+
+      else {
         if (!csvFile) {
           throw new Error("CSV file is required");
         }
@@ -69,67 +75,249 @@ export const uploadCSVQuestions = createAsyncThunk(
         csvPublicId = uploadResult.publicId;
 
         const csvText = await csvFile.text();
-        const lines = csvText.split("\n");
-        const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+        const lines = csvText
+          .split("\n")
+          .map((line) => line.trim())
+          .filter((line) => line.length > 0);
+
+        if (lines.length < 2) {
+          throw new Error(
+            "CSV file appears empty or invalid. Please use AI Parser for better results."
+          );
+        }
+
+        const headers = lines[0].split(",").map((h) =>
+          h
+            .trim()
+            .toLowerCase()
+            .replace(/[_\-\s]/g, "")
+            .replace(/['"]/g, "")
+        );
+
+        const findHeader = (possibleNames) => {
+          for (let name of possibleNames) {
+            const cleanName = name.toLowerCase().replace(/[_\-\s]/g, "");
+            const index = headers.findIndex((h) => h.includes(cleanName));
+            if (index !== -1) return index;
+          }
+          return -1;
+        };
+
+        const questionIndex = findHeader([
+          "question",
+          "questiontext",
+          "q",
+          "ques",
+          "problem",
+        ]);
+        const optionAIndex = findHeader([
+          "optiona",
+          "option_a",
+          "a",
+          "choice1",
+          "choicea",
+        ]);
+        const optionBIndex = findHeader([
+          "optionb",
+          "option_b",
+          "b",
+          "choice2",
+          "choiceb",
+        ]);
+        const optionCIndex = findHeader([
+          "optionc",
+          "option_c",
+          "c",
+          "choice3",
+          "choicec",
+        ]);
+        const optionDIndex = findHeader([
+          "optiond",
+          "option_d",
+          "d",
+          "choice4",
+          "choiced",
+        ]);
+        const answerIndex = findHeader([
+          "answer",
+          "correctanswer",
+          "correct",
+          "solution",
+          "key",
+        ]);
+        const levelIndex = findHeader([
+          "level",
+          "difficulty",
+          "questionlevel",
+          "hardness",
+        ]);
+        const explanationIndex = findHeader([
+          "explanation",
+          "solution",
+          "hint",
+          "answerexplanation",
+          "reasoning",
+        ]);
+        const imagesIndex = findHeader(["images", "image", "pics", "pictures"]);
+
+        if (
+          questionIndex === -1 ||
+          optionAIndex === -1 ||
+          optionBIndex === -1 ||
+          optionCIndex === -1 ||
+          optionDIndex === -1
+        ) {
+          throw new Error(
+            `Suggestion: Use AI Parser mode for automatic question extraction from any document format.`
+          );
+        }
+
+        let successCount = 0;
+        let failedCount = 0;
 
         for (let i = 1; i < lines.length; i++) {
-          if (!lines[i].trim()) continue;
+          try {
+            const rowValues = [];
+            let currentValue = "";
+            let insideQuotes = false;
 
-          const values = lines[i].split(",");
-          const row = {};
-          headers.forEach((header, index) => {
-            row[header] = values[index]?.trim();
-          });
+            for (let char of lines[i]) {
+              if (char === '"') {
+                insideQuotes = !insideQuotes;
+              } else if (char === "," && !insideQuotes) {
+                rowValues.push(currentValue.trim());
+                currentValue = "";
+              } else {
+                currentValue += char;
+              }
+            }
+            rowValues.push(currentValue.trim()); 
 
-          const images = row.images
-            ? row.images.split(";").map((img) => img.trim())
-            : [];
+            const cleanedValues = rowValues.map((v) =>
+              v.replace(/^["']|["']$/g, "").trim()
+            );
 
-          const explanation = 
-            row.explanation || 
-            row.solution || 
-            row.answer_explanation ||
-            row.explanation_text ||
-            null;
+            const questionText = cleanedValues[questionIndex] || "";
+            const optionA = cleanedValues[optionAIndex] || "";
+            const optionB = cleanedValues[optionBIndex] || "";
+            const optionC = cleanedValues[optionCIndex] || "";
+            const optionD = cleanedValues[optionDIndex] || "";
 
-          parsedQuestions.push({
-            questionText: row.questiontext,
-            options: [row.optiona, row.optionb, row.optionc, row.optiond].filter(
-              Boolean
-            ),
-            images,
-            correctAnswer: row.correctanswer,
-            questionLevel: row.questionlevel || "Medium",
-            explanation: explanation, 
-          });
+            if (!questionText || !optionA || !optionB || !optionC || !optionD) {
+              console.warn(
+                `Row ${i + 1}: Missing required fields, skipping`
+              );
+              failedCount++;
+              continue;
+            }
+
+            let correctAnswer = "";
+            if (answerIndex !== -1) {
+              const answerValue = cleanedValues[answerIndex]
+                .trim()
+                .toUpperCase();
+
+              if (answerValue === "A" || answerValue === "1") {
+                correctAnswer = optionA;
+              } else if (answerValue === "B" || answerValue === "2") {
+                correctAnswer = optionB;
+              } else if (answerValue === "C" || answerValue === "3") {
+                correctAnswer = optionC;
+              } else if (answerValue === "D" || answerValue === "4") {
+                correctAnswer = optionD;
+              } else {
+                const allOptions = [optionA, optionB, optionC, optionD];
+                const matchedOption = allOptions.find(
+                  (opt) =>
+                    opt.toLowerCase().includes(answerValue.toLowerCase()) ||
+                    answerValue.toLowerCase().includes(opt.toLowerCase())
+                );
+                correctAnswer = matchedOption || optionA; 
+              }
+            } else {
+              correctAnswer = optionA;
+            }
+
+            const questionLevel =
+              levelIndex !== -1
+                ? cleanedValues[levelIndex] || "Medium"
+                : "Medium";
+
+            const images =
+              imagesIndex !== -1 && cleanedValues[imagesIndex]
+                ? cleanedValues[imagesIndex]
+                    .split(";")
+                    .map((img) => img.trim())
+                    .filter(Boolean)
+                : [];
+
+            const explanation =
+              explanationIndex !== -1 ? cleanedValues[explanationIndex] : null;
+
+            const questionData = {
+              questionText: questionText,
+              options: [optionA, optionB, optionC, optionD].filter(
+                (opt) => opt !== undefined && opt !== null && opt !== ""
+              ),
+              images,
+              correctAnswer: correctAnswer,
+              questionLevel: questionLevel,
+            };
+            if (explanation && explanation.trim() !== "") {
+              questionData.explanation = explanation.trim();
+            }
+
+            parsedQuestions.push(questionData);
+            successCount++;
+          } catch (rowError) {
+            console.warn(`Error parsing row ${i + 1}:`, rowError.message);
+            failedCount++;
+          }
+        }
+
+        if (failedCount > successCount || parsedQuestions.length === 0) {
+          throw new Error(
+            ` Recommended Solution: Use AI Parser mode for automatic question extraction.
+              AI Parser supports: CSV formats.`
+          );
         }
       }
 
+      if (parsedQuestions.length === 0) {
+        throw new Error(`Recommended Solution: Please use AI Parser mode .`);
+      }
+
       const questionSetData = {
-        testName,
-        title,
-        instructions,
-        testType,
-        makeTime: Number(makeTime),
+        testName: testName || "",
+        title: title || "",
+        instructions: instructions || "",
+        testType: testType || "multiple_choice",
+        makeTime: Number(makeTime) || 0,
         questions: parsedQuestions,
         categoryId,
         categoryName,
         subject,
-        subcategory: subcategory || null,
         createdBy: userId,
         uploadedViaAI: uploadedViaAI || false,
-        ...(csvUrl && { csvFileUrl: csvUrl }),
-        ...(csvPublicId && { csvPublicId }),
         createdAt: serverTimestamp(),
       };
 
-      const docRef = await addDoc(collection(db, "questions"), questionSetData);
+      if (subcategory) {
+        questionSetData.subcategory = subcategory;
+      }
+      if (csvUrl) {
+        questionSetData.csvFileUrl = csvUrl;
+      }
+      if (csvPublicId) {
+        questionSetData.csvPublicId = csvPublicId;
+      }
 
+      const docRef = await addDoc(collection(db, "questions"), questionSetData);
       return {
         success: true,
         message: uploadedViaAI
-          ? "AI-parsed questions uploaded successfully"
-          : "Questions uploaded successfully",
+          ? `AI-parsed questions uploaded successfully! ${parsedQuestions.length} questions added.`
+          : `CSV uploaded successfully! ${parsedQuestions.length} questions added.`,
         cloudinaryFile: csvUrl,
         data: {
           id: docRef.id,
@@ -137,11 +325,23 @@ export const uploadCSVQuestions = createAsyncThunk(
         },
       };
     } catch (error) {
-      return rejectWithValue(error.message);
+      let errorMessage = error.message;
+
+      if (
+        errorMessage.includes("Cannot detect") ||
+        errorMessage.includes("format parsing failed") ||
+        errorMessage.includes("No valid questions")
+      ) {
+        return rejectWithValue(errorMessage);
+      } else {
+        return rejectWithValue(
+          `${errorMessage}
+            Having trouble with CSV format? Try using AI Parser mode for automatic question extraction from any document!`
+        );
+      }
     }
   }
 );
-
 
 export const uploadAIParsedQuestions = createAsyncThunk(
   "questions/uploadAIParsedQuestions",
@@ -179,7 +379,7 @@ export const uploadAIParsedQuestions = createAsyncThunk(
         images: q.images || [],
         correctAnswer: q.correctAnswer,
         questionLevel: q.questionLevel || "Medium",
-        explanation: q.explanation || null, 
+        explanation: q.explanation || null,
       }));
 
       const questionSetData = {
@@ -216,7 +416,6 @@ export const uploadAIParsedQuestions = createAsyncThunk(
   }
 );
 
-
 export const updateSingleQuestion = createAsyncThunk(
   "questions/updateSingleQuestion",
   async ({ testId, questionIndex, updates }, { rejectWithValue }) => {
@@ -252,7 +451,6 @@ export const updateSingleQuestion = createAsyncThunk(
     }
   }
 );
-
 
 export const addQuestionImages = createAsyncThunk(
   "questions/addQuestionImages",
@@ -418,7 +616,6 @@ export const deleteQuestionPaper = createAsyncThunk(
   }
 );
 
-
 export const getAllQuestionPapersByCreator = createAsyncThunk(
   "questions/getAllQuestionPapersByCreator",
   async (_, { rejectWithValue }) => {
@@ -429,7 +626,7 @@ export const getAllQuestionPapersByCreator = createAsyncThunk(
       const questionsRef = collection(db, "questions");
       const q = query(
         questionsRef,
-        where("createdBy", "==", userId),  // ✅ Filters by current user
+        where("createdBy", "==", userId), // ✅ Filters by current user
         orderBy("createdAt", "desc")
       );
       const querySnapshot = await getDocs(q);
@@ -471,7 +668,7 @@ export const getAllQuestionPapers = createAsyncThunk(
       if (filterByCreator) {
         const userId = auth.currentUser?.uid;
         if (!userId) throw new Error("User not authenticated");
-        
+
         // Filter by current user
         q = query(
           questionsRef,
@@ -636,7 +833,10 @@ export const getPapersByCategory = createAsyncThunk(
 
 export const getPapersBySubject = createAsyncThunk(
   "questions/getPapersBySubject",
-  async ({ categoryId, subject, filterByCreator = true }, { rejectWithValue }) => {
+  async (
+    { categoryId, subject, filterByCreator = true },
+    { rejectWithValue }
+  ) => {
     try {
       const userId = auth.currentUser?.uid;
       const questionsRef = collection(db, "questions");
@@ -690,7 +890,10 @@ export const getPapersBySubject = createAsyncThunk(
 
 export const getPapersBySubcategory = createAsyncThunk(
   "questions/getPapersBySubcategory",
-  async ({ categoryId, subject, subcategory, filterByCreator = true }, { rejectWithValue }) => {
+  async (
+    { categoryId, subject, subcategory, filterByCreator = true },
+    { rejectWithValue }
+  ) => {
     try {
       const userId = auth.currentUser?.uid;
       const questionsRef = collection(db, "questions");
@@ -788,7 +991,7 @@ const questionSlice = createSlice({
         state.uploadProgress = 0;
         state.error = action.payload;
       })
-      
+
       // ✅ CRITICAL: Handle getAllQuestionPapersByCreator separately
       .addCase(getAllQuestionPapersByCreator.pending, (state) => {
         state.loading = true;
@@ -798,14 +1001,17 @@ const questionSlice = createSlice({
         state.loading = false;
         // ✅ Replace papers with creator-specific data
         state.papers = action.payload.data || [];
-        console.log("✅ Redux: Set papers for creator:", action.payload.data?.length || 0);
+        console.log(
+          "✅ Redux: Set papers for creator:",
+          action.payload.data?.length || 0
+        );
       })
       .addCase(getAllQuestionPapersByCreator.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.papers = []; // ✅ Clear papers on error
       })
-      
+
       .addCase(getAllQuestionPapers.fulfilled, (state, action) => {
         state.papers = action.payload.data;
       })
@@ -860,6 +1066,10 @@ const questionSlice = createSlice({
   },
 });
 
-export const { clearSelectedPaper, setUploadProgress, setLoading, clearPapers } =
-  questionSlice.actions;
+export const {
+  clearSelectedPaper,
+  setUploadProgress,
+  setLoading,
+  clearPapers,
+} = questionSlice.actions;
 export default questionSlice.reducer;
