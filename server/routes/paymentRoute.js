@@ -38,7 +38,7 @@ router.post("/create-order", async (req, res) => {
 
     // Create Razorpay order
     const order = await razorpay.orders.create({
-      amount: amount, // amount in paise
+      amount: amount, 
       currency: "INR",
       receipt: `order_${Date.now()}`,
       notes: {
@@ -49,7 +49,6 @@ router.post("/create-order", async (req, res) => {
 
     console.log("Razorpay order created:", order.id);
 
-    // Store order in Firestore
     await db.collection("orders").add({
       user: userId,
       plan: planId,
@@ -154,7 +153,6 @@ router.post("/verify", async (req, res) => {
       completedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    console.log("Order updated to completed:", orderDoc.id);
 
     // Update user subscription
     const userRef = db.collection("users").doc(userId);

@@ -15,6 +15,7 @@ import {
   Sparkles,
   Brain,
   ChevronRight,
+  BookOpen,
 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
 import mammoth from "mammoth";
@@ -29,7 +30,7 @@ const UploadCSV = () => {
   const { uploadCSV, loading, fetchQuestionPapers } = useAdmin();
   const dispatch = useDispatch();
   const { categories } = useSelector((state) => state.category);
-  const { user } = useSelector((state) => state.auth); 
+  const { user } = useSelector((state) => state.auth);
 
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
@@ -48,6 +49,12 @@ const UploadCSV = () => {
   const [parsedQuestions, setParsedQuestions] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
   const [aiProcessing, setAiProcessing] = useState(false);
+
+  const testTypes = [
+    { value: "multiple_choice", label: "Multiple Choice (MCQ)", icon: "📝" },
+    { value: "demo", label: "Demo Test", icon: "🎯" },
+    { value: "mock", label: "Mock Test", icon: "🎓" },
+  ];
 
   useEffect(() => {
     dispatch(getAllCategories());
@@ -420,6 +427,7 @@ const UploadCSV = () => {
       !formData.testName ||
       !formData.title ||
       !formData.makeTime ||
+      !formData.testType ||
       !selectedCategoryId ||
       !selectedSubject
     ) {
@@ -498,6 +506,7 @@ const UploadCSV = () => {
       title: "",
       instructions: "",
       makeTime: "",
+      testType: "multiple_choice",
     });
     setFile(null);
     setSelectedCategoryId("");
@@ -520,6 +529,7 @@ const UploadCSV = () => {
       !formData.testName ||
       !formData.title ||
       !formData.makeTime ||
+      !formData.testType ||
       !selectedCategoryId ||
       !selectedSubject
     ) {
@@ -538,7 +548,7 @@ const UploadCSV = () => {
       submitData.append("title", formData.title);
       submitData.append("instructions", formData.instructions);
       submitData.append("makeTime", formData.makeTime);
-      submitData.append("testType", "multiple_choice");
+      submitData.append("testType", formData.testType);
 
       submitData.append("categoryId", selectedCategoryId);
       const selectedCat = categories.find(
@@ -590,7 +600,7 @@ const UploadCSV = () => {
         title: formData.title,
         instructions: formData.instructions,
         makeTime: formData.makeTime,
-        testType: "multiple_choice",
+        testType: formData.testType,
         questions: parsedQuestions,
         uploadedViaAI: true,
         originalFileName: file.name,
@@ -784,6 +794,36 @@ const UploadCSV = () => {
               className={inputClasses}
               placeholder="Enter guidelines for the students..."
             />
+          </div>
+
+          <div>
+            <label className={labelClasses}>
+              <BookOpen size={14} className="inline mr-2" /> Test Type *
+            </label>
+            <select
+              name="testType"
+              value={formData.testType}
+              onChange={handleInputChange}
+              className={`${inputClasses} appearance-none cursor-pointer`}
+              required
+            >
+              {testTypes.map((type) => (
+                <option
+                  key={type.value}
+                  value={type.value}
+                  className="bg-gray-900"
+                >
+                  {type.icon} {type.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 my-2 ml-1">
+              {formData.testType === "demo" &&
+                "✨ Demo tests are free for all users"}
+              {formData.testType === "multiple_choice" &&
+                "Standard MCQ format with 4 options"}
+              {formData.testType === "mock" && "Full-length simulation test"}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

@@ -7,11 +7,7 @@ import { doc, onSnapshot } from "firebase/firestore"; // ✅ Changed from getDoc
 import { db } from "../../config/firebase";
 import InstructionModal from "./InstructionModal";
 import { isSubscriptionActive } from "../../../utils/subscriptionHelpers";
-import {
-  startTest,
-  clearTests,
-  getAllTests,
-} from "../../slices/testSlice";
+import { startTest, clearTests, getAllTests } from "../../slices/testSlice";
 import { LockIcon } from "lucide-react";
 
 const GetAllTest = () => {
@@ -30,11 +26,44 @@ const GetAllTest = () => {
   const [showInstructions, setShowInstructions] = useState(false);
   const [realtimeUserData, setRealtimeUserData] = useState(null);
   const [checkingSubscription, setCheckingSubscription] = useState(false);
+  const [displayTests, setDisplayTests] = useState([]);
+  useEffect(() => {
+    if (tests && tests.length > 0) {
+      // Separate demo and non-demo tests
+      const demoTests = tests.filter(
+        (test) => test.isDemo || test.testType?.toLowerCase() === "demo"
+      );
+      const nonDemoTests = tests.filter(
+        (test) => !test.isDemo && test.testType?.toLowerCase() !== "demo"
+      );
+
+      // Take 1-2 demo tests and 1-2 non-demo tests (total 3)
+      const selectedDemoTests = demoTests.slice(0, 2); // Take up to 2 demo tests
+      const remainingSlots = 3 - selectedDemoTests.length;
+      const selectedNonDemoTests = nonDemoTests.slice(0, remainingSlots); // Fill remaining slots
+
+      const filteredTests = [
+        ...selectedDemoTests,
+        ...selectedNonDemoTests,
+      ].slice(0, 3);
+
+      console.log("📊 Displaying tests:", {
+        total: tests.length,
+        demoTests: selectedDemoTests.length,
+        lockedTests: selectedNonDemoTests.length,
+        displaying: filteredTests.length,
+      });
+
+      setDisplayTests(filteredTests);
+    } else {
+      setDisplayTests([]);
+    }
+  }, [tests]);
 
   // ✅ Load tests on mount
   useEffect(() => {
     dispatch(getAllTests());
-  
+
     return () => {
       dispatch(clearTests());
     };
@@ -59,7 +88,7 @@ const GetAllTest = () => {
           const userData = docSnapshot.data();
           console.log("✅ Real-time user data updated:", {
             subscription: userData.subscription,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
           setRealtimeUserData(userData);
           setCheckingSubscription(false);
@@ -95,28 +124,34 @@ const GetAllTest = () => {
 
     // ✅ Use real-time data if available, otherwise fall back to Redux user
     const userData = realtimeUserData || user;
-    
+
     console.log("🔍 Checking access:", {
       testName: test.testName,
       hasRealtimeData: !!realtimeUserData,
       subscription: userData.subscription,
       isArray: Array.isArray(userData.subscription),
-      subscriptionLength: userData.subscription?.length || 0
+      subscriptionLength: userData.subscription?.length || 0,
     });
 
-    if (userData.subscription && Array.isArray(userData.subscription) && userData.subscription.length > 0) {
-      const activeSubscription = userData.subscription.find(sub => {
+    if (
+      userData.subscription &&
+      Array.isArray(userData.subscription) &&
+      userData.subscription.length > 0
+    ) {
+      const activeSubscription = userData.subscription.find((sub) => {
         return isSubscriptionActive(sub);
       });
 
       const hasAccess = !!activeSubscription;
       console.log("✅ Access check result:", {
         hasAccess,
-        activeSubscription: activeSubscription ? {
-          plan: activeSubscription.plan,
-          status: activeSubscription.status,
-          expiresAt: activeSubscription.expiresAt
-        } : null
+        activeSubscription: activeSubscription
+          ? {
+              plan: activeSubscription.plan,
+              status: activeSubscription.status,
+              expiresAt: activeSubscription.expiresAt,
+            }
+          : null,
       });
       return hasAccess;
     }
@@ -186,10 +221,14 @@ const GetAllTest = () => {
   // ✅ Check premium access using real-time data
   const hasPremiumAccess = () => {
     const userData = realtimeUserData || user;
-    if (!userData || !userData.subscription || !Array.isArray(userData.subscription)) {
+    if (
+      !userData ||
+      !userData.subscription ||
+      !Array.isArray(userData.subscription)
+    ) {
       return false;
     }
-    return userData.subscription.some(sub => isSubscriptionActive(sub));
+    return userData.subscription.some((sub) => isSubscriptionActive(sub));
   };
 
   return (
@@ -238,7 +277,7 @@ const GetAllTest = () => {
               {checkingSubscription ? "VERIFYING ACCESS..." : "INITIALIZING..."}
             </p>
           </div>
-        ) : !tests || tests.length === 0 ? (
+        ) : !displayTests || displayTests.length === 0 ? (
           <div className="text-center py-20 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 max-w-2xl mx-auto border-dashed">
             <p className="text-2xl font-semibold text-gray-300 mb-2">
               No Data Found
@@ -249,7 +288,7 @@ const GetAllTest = () => {
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tests.map((test, i) => {
+            {displayTests.map((test, i) => {
               const locked = !checkAccess(test);
               const isDemo =
                 test.isDemo || test.testType?.toLowerCase() === "demo";
@@ -320,11 +359,7 @@ const GetAllTest = () => {
 
                   <button
                     onClick={() => handleStartClick(test)}
-                    disabled={
-                      locked ||
-                      isStarting ||
-                      testStarting
-                    }
+                    disabled={locked || isStarting || testStarting}
                     className={`relative w-full py-3.5 cursor-pointer rounded-xl font-bold text-sm tracking-wide transition-all duration-300 overflow-hidden ${
                       locked
                         ? "bg-white/5 text-gray-500 border border-white/5 hover:border-white/10 cursor-not-allowed"

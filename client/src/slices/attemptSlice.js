@@ -21,15 +21,15 @@ export const getAllTestAttempts = createAsyncThunk(
       // Get user data
       const userDoc = await getDoc(doc(db, "users", userId));
       if (!userDoc.exists()) throw new Error("User not found");
-      
+
       const userData = userDoc.data();
       const userRole = userData.role;
-      
+
       console.log("👤 Current user role:", userRole);
 
       // Determine which tests the user can see
       let allowedCreatorId = null;
-      
+
       if (userRole === "student") {
         // Students see tests from their admin
         allowedCreatorId = userData.createdBy;
@@ -86,7 +86,7 @@ export const getAllTestAttempts = createAsyncThunk(
 
       for (let i = 0; i < testIds.length; i += batchSize) {
         const batch = testIds.slice(i, i + batchSize);
-        
+
         const attemptsRef = collection(db, "testAttempts");
         const attemptsQuery = query(
           attemptsRef,
@@ -96,18 +96,18 @@ export const getAllTestAttempts = createAsyncThunk(
         );
 
         const attemptsSnapshot = await getDocs(attemptsQuery);
-        
+
         // Group attempts by testId
         const testAttemptsMap = {};
-        
+
         for (const docSnapshot of attemptsSnapshot.docs) {
           const attemptData = docSnapshot.data();
           const testId = attemptData.testId;
-          
+
           if (!testAttemptsMap[testId]) {
             testAttemptsMap[testId] = [];
           }
-          
+
           testAttemptsMap[testId].push({
             id: docSnapshot.id,
             ...attemptData,
@@ -116,15 +116,15 @@ export const getAllTestAttempts = createAsyncThunk(
         }
 
         // Create test objects with attempt info
-        batch.forEach(testId => {
+        batch.forEach((testId) => {
           const testData = testsData[testId];
           const attempts = testAttemptsMap[testId] || [];
-          
+
           // Check if current user has attempted
           const userHasAttempted = attempts.some(
-            attempt => attempt.userId === userId
+            (attempt) => attempt.userId === userId
           );
-          
+
           allTests.push({
             testId: testId,
             testName: testData.testName || "Unnamed Test",
@@ -140,7 +140,6 @@ export const getAllTestAttempts = createAsyncThunk(
 
       console.log("✅ Processed", allTests.length, "tests for leaderboard");
       return allTests;
-
     } catch (error) {
       console.error("❌ Error fetching test attempts:", error);
       return rejectWithValue(error.message);
@@ -165,7 +164,7 @@ export const getAttemptsByTest = createAsyncThunk(
       }
 
       const testData = testDoc.data();
-      
+
       // Check user permissions
       const userDoc = await getDoc(doc(db, "users", userId));
       const userData = userDoc.data();
@@ -199,7 +198,7 @@ export const getAttemptsByTest = createAsyncThunk(
       }
 
       const attempts = [];
-      
+
       for (const docSnapshot of querySnapshot.docs) {
         const attemptData = docSnapshot.data();
 
@@ -207,7 +206,7 @@ export const getAttemptsByTest = createAsyncThunk(
         let userName = "Unknown";
         let userEmail = "N/A";
         let attemptUserId = attemptData.userId;
-        
+
         if (attemptUserId) {
           const studentDoc = await getDoc(doc(db, "users", attemptUserId));
           if (studentDoc.exists()) {
@@ -234,10 +233,12 @@ export const getAttemptsByTest = createAsyncThunk(
 
       console.log("✅ Found", attempts.length, "attempts for leaderboard");
       console.log("👤 Current user ID:", userId);
-      console.log("📊 Sample attempt user IDs:", attempts.slice(0, 3).map(a => a.user._id));
+      console.log(
+        "📊 Sample attempt user IDs:",
+        attempts.slice(0, 3).map((a) => a.user._id)
+      );
 
       return { data: attempts };
-
     } catch (error) {
       console.error("❌ Error fetching test leaderboard:", error);
       return rejectWithValue(error.message);
@@ -260,7 +261,7 @@ export const getTestAttemptsByAdmin = createAsyncThunk(
       }
 
       const testData = testDoc.data();
-      
+
       // Check if user is superadmin or the test creator
       const userDoc = await getDoc(doc(db, "users", userId));
       const userRole = userDoc.data()?.role;
@@ -286,11 +287,18 @@ export const getTestAttemptsByAdmin = createAsyncThunk(
         let userName = "Unknown";
         let userEmail = "N/A";
         if (attemptData.userId) {
-          const studentDoc = await getDoc(doc(db, "users", attemptData.userId));
-          if (studentDoc.exists()) {
-            const studentData = studentDoc.data();
-            userName = studentData.name || "Unknown";
-            userEmail = studentData.email || "N/A";
+          try {
+            const studentDoc = await getDoc(
+              doc(db, "users", attemptData.userId)
+            );
+            if (studentDoc.exists()) {
+              const studentData = studentDoc.data();
+              userName =
+                studentData.name || studentData.displayName || "Unknown";
+              userEmail = studentData.email || "N/A";
+            }
+          } catch (error) {
+            console.error(`Error fetching user ${attemptData.userId}:`, error);
           }
         }
 
