@@ -138,7 +138,6 @@ export const login = createAsyncThunk(
       );
 
       const user = userCredential.user;
-      console.log("🔵 User authenticated:", user.uid);
 
       const userRef = doc(db, "users", user.uid);
       const snap = await getDoc(userRef);
@@ -148,8 +147,6 @@ export const login = createAsyncThunk(
       }
 
       const userData = snap.data();
-      console.log("✅ User data fetched:", userData);
-      console.log("✅ Subscription data:", userData.subscription);
 
       const completeUser = {
         uid: user.uid,
@@ -287,7 +284,6 @@ export const logout = createAsyncThunk(
         message: "Logged out successfully",
       };
     } catch (error) {
-      console.log("logout error", error);
       return rejectWithValue(error.message);
     }
   }

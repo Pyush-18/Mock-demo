@@ -9,7 +9,7 @@ import {
   deleteQuestionImage as deleteImageAction,
   deleteQuestion as deleteQuestionAction,
   deleteQuestionPaper as deleteQuestionPaperAction,
-  clearPapers, // ✅ Import clearPapers action
+  clearPapers,
 } from "../slices/questionSlice";
 import {
   getTestAttemptsByAdmin,
@@ -17,62 +17,41 @@ import {
 } from "../slices/attemptSlice";
 import { getAllCategories } from "../slices/categorySlice";
 import toast from "react-hot-toast";
-
 const AdminContext = createContext();
-
 export const AdminProvider = ({ children }) => {
   const dispatch = useDispatch();
-
   const { papers: questionPapers, loading: papersLoading } = useSelector(
     (state) => state.questions
   );
   const { user } = useSelector((state) => state.auth);
   const { testAttempts } = useSelector((state) => state.attempts);
   const { categories, loading: categoriesLoading } = useSelector((state) => state.category);
-
   const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedPaper, setSelectedPaper] = useState(null);
   const [filteredPapers, setFilteredPapers] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-
-  // ✅ Initialize when user is available
   useEffect(() => {
     const initializeAdmin = async () => {
       if (!user) {
-        console.log("⏳ Waiting for user...");
         setIsAuthenticated(false);
         setIsInitializing(false);
-        // ✅ Clear papers when no user
         dispatch(clearPapers());
         return;
       }
-
       if (user.role !== "admin" && user.role !== "superadmin") {
-        console.log("❌ User is not an admin");
         setIsAuthenticated(false);
         setIsInitializing(false);
-        // ✅ Clear papers for non-admin users
         dispatch(clearPapers());
         return;
       }
-
-      console.log("✅ Admin authenticated:", user.uid, user.role);
       setIsAuthenticated(true);
-
       try {
-        // ✅ Clear old data before fetching new
         dispatch(clearPapers());
-        
-        // Fetch data in parallel
         const [categoriesResult, papersResult] = await Promise.all([
           dispatch(getAllCategories()).unwrap(),
           dispatch(getAllQuestionPapersByCreator()).unwrap()
         ]);
-        
-        console.log("✅ Admin data loaded successfully");
-        console.log("📊 Papers count:", papersResult.data?.length || 0);
-        console.log("📂 Categories count:", categoriesResult?.length || 0);
       } catch (error) {
         console.error("❌ Error loading admin data:", error);
         toast.error("Failed to load dashboard data");
@@ -80,15 +59,11 @@ export const AdminProvider = ({ children }) => {
         setIsInitializing(false);
       }
     };
-
     initializeAdmin();
   }, [user, dispatch]);
-
-  // ✅ Update filtered papers when questionPapers change
   useEffect(() => {
     setFilteredPapers(questionPapers);
   }, [questionPapers]);
-
   const fetchCategories = async () => {
     try {
       await dispatch(getAllCategories()).unwrap();
@@ -97,11 +72,9 @@ export const AdminProvider = ({ children }) => {
       toast.error("Failed to load categories");
     }
   };
-
   const fetchQuestionPapers = async () => {
     try {
       const result = await dispatch(getAllQuestionPapersByCreator()).unwrap();
-      console.log("✅ Fetched question papers:", result.data?.length || 0);
       return result;
     } catch (error) {
       console.error("Error fetching question papers:", error);
@@ -109,7 +82,6 @@ export const AdminProvider = ({ children }) => {
       throw error;
     }
   };
-
   const fetchPapersByType = async (testType) => {
     try {
       const result = await dispatch(
@@ -123,13 +95,10 @@ export const AdminProvider = ({ children }) => {
       throw error;
     }
   };
-
   const fetchTestAttempts = async (testId) => {
     try {
-      console.log("🔍 Fetching attempts for test:", testId);
       await dispatch(resetTestAttempts());
       const result = await dispatch(getTestAttemptsByAdmin(testId)).unwrap();
-      console.log("✅ Fetched attempts:", result?.length || 0);
       return result;
     } catch (error) {
       console.error("Error fetching test attempts:", error);
@@ -137,11 +106,9 @@ export const AdminProvider = ({ children }) => {
       throw error;
     }
   };
-
   const uploadCSV = async (data) => {
     try {
       let payload;
-
       if (data instanceof FormData) {
         payload = {
           testName: data.get("testName"),
@@ -155,7 +122,6 @@ export const AdminProvider = ({ children }) => {
           subject: data.get("subject"),
           subcategory: data.get("subcategory") || null,
         };
-        console.log("tradi daat", payload)
       } else {
         payload = {
           testName: data.testName,
@@ -172,25 +138,21 @@ export const AdminProvider = ({ children }) => {
           subcategory: data.subcategory || null,
         };
       }
-
       const result = await dispatch(uploadCSVQuestions(payload)).unwrap();
       await fetchQuestionPapers();
       toast.success(result.message);
       return result;
     } catch (error) {
-      console.log('failed to upload question ', error)
       const errorMessage = error || "Failed to upload questions";
       toast.error(errorMessage);
       throw error;
     }
   };
-
   const updateQuestion = async (testId, questionIndex, updates) => {
     try {
       const result = await dispatch(
         updateSingleQuestion({ testId, questionIndex, updates })
       ).unwrap();
-
       await fetchQuestionPapers();
       toast.success("Question updated successfully");
       return result;
@@ -200,7 +162,6 @@ export const AdminProvider = ({ children }) => {
       throw error;
     }
   };
-
   const addQuestionImagesHandler = async ({
     testId,
     questionIndex,
@@ -210,7 +171,6 @@ export const AdminProvider = ({ children }) => {
       const result = await dispatch(
         addQuestionImages({ testId, questionIndex, imageFiles })
       ).unwrap();
-
       await fetchQuestionPapers();
       toast.success("Images added successfully");
       return result;
@@ -220,13 +180,11 @@ export const AdminProvider = ({ children }) => {
       throw error;
     }
   };
-
   const deleteQuestionImage = async (testId, questionIndex, imageIndex) => {
     try {
       const result = await dispatch(
         deleteImageAction({ testId, questionIndex, imageIndex })
       ).unwrap();
-
       await fetchQuestionPapers();
       toast.success("Image deleted successfully");
       return result;
@@ -236,13 +194,11 @@ export const AdminProvider = ({ children }) => {
       throw error;
     }
   };
-
   const deleteQuestion = async (testId, questionIndex) => {
     try {
       const result = await dispatch(
         deleteQuestionAction({ testId, questionIndex })
       ).unwrap();
-
       await fetchQuestionPapers();
       toast.success("Question deleted successfully");
       return result;
@@ -252,11 +208,9 @@ export const AdminProvider = ({ children }) => {
       throw error;
     }
   };
-
   const deleteQuestionPaper = async (testId) => {
     try {
       const result = await dispatch(deleteQuestionPaperAction(testId)).unwrap();
-
       await fetchQuestionPapers();
       toast.success("Question paper deleted successfully");
       return result;
@@ -266,7 +220,6 @@ export const AdminProvider = ({ children }) => {
       throw error;
     }
   };
-
   const filterPapers = (type) => {
     if (type === "all") {
       setFilteredPapers(questionPapers);
@@ -277,7 +230,6 @@ export const AdminProvider = ({ children }) => {
       setFilteredPapers(filtered);
     }
   };
-
   const filterPapersByCategory = (categoryId) => {
     if (categoryId === "all") {
       setFilteredPapers(questionPapers);
@@ -288,7 +240,6 @@ export const AdminProvider = ({ children }) => {
       setFilteredPapers(filtered);
     }
   };
-
   const filterPapersByCategoryAndSubject = (categoryId, subject) => {
     if (categoryId === "all") {
       setFilteredPapers(questionPapers);
@@ -304,7 +255,6 @@ export const AdminProvider = ({ children }) => {
       setFilteredPapers(filtered);
     }
   };
-
   const value = {
     loading: papersLoading || categoriesLoading || isInitializing,
     isAuthenticated,
@@ -330,12 +280,10 @@ export const AdminProvider = ({ children }) => {
     filterPapersByCategory,
     filterPapersByCategoryAndSubject,
   };
-
   return (
     <AdminContext.Provider value={value}>{children}</AdminContext.Provider>
   );
 };
-
 export const useAdmin = () => {
   const context = useContext(AdminContext);
   if (!context) {

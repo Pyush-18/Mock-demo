@@ -12,8 +12,6 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 
 const EditQuestionModal = ({ paper, question, index,  onClose }) => {
-  console.log("paper ", paper)
-  console.log("question ", question)
   const { updateQuestion } = useAdmin();
   const [formData, setFormData] = useState({
     questionText: question.questionText,
@@ -32,7 +30,6 @@ const EditQuestionModal = ({ paper, question, index,  onClose }) => {
       setMessage({ type: "success", text: "Question updated successfully!" });
       setTimeout(() => onClose(), 1500);
     } catch (error) {
-      console.log(error)
       setMessage({
         type: "error",
         text:

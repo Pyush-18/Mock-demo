@@ -14,7 +14,6 @@ export const createCheckout = createAsyncThunk(
   "payment/createCheckout",
   async ({ userId, planId }, { rejectWithValue }) => {
     try {
-      console.log("🔵 Creating checkout for:", { userId, planId });
       
       
       const planRef = await getDocs(
@@ -28,8 +27,6 @@ export const createCheckout = createAsyncThunk(
       const plan = { id: planRef.docs[0].id, ...planRef.docs[0].data() };
       const amount = Math.round((plan.price || 0) * 100); 
 
-      console.log("🔵 Calling server API:", `${API_URL}/api/payment/create-order`);
-      console.log("🔵 With data:", { userId, planId, amount });
 
       
       const response = await axios.post(`${API_URL}/api/payment/create-order`, {
@@ -38,7 +35,6 @@ export const createCheckout = createAsyncThunk(
         amount,
       });
 
-      console.log("✅ Server response:", response.data);
 
       if (!response.data.success) {
         return rejectWithValue(response.data.message);

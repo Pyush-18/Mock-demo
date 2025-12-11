@@ -3,24 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { doc, onSnapshot } from "firebase/firestore"; // ✅ Changed from getDoc to onSnapshot
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import InstructionModal from "./InstructionModal";
 import { isSubscriptionActive } from "../../../utils/subscriptionHelpers";
 import { startTest, clearTests, getAllTests } from "../../slices/testSlice";
 import { LockIcon } from "lucide-react";
-
 const GetAllTest = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   const { user } = useSelector((state) => state.auth);
   const {
     tests,
     allTestsLoading,
     loading: testStarting,
   } = useSelector((state) => state.test);
-
   const [starting, setStarting] = useState(null);
   const [selectedTest, setSelectedTest] = useState(null);
   const [showInstructions, setShowInstructions] = useState(false);
@@ -29,110 +26,65 @@ const GetAllTest = () => {
   const [displayTests, setDisplayTests] = useState([]);
   useEffect(() => {
     if (tests && tests.length > 0) {
-      // Separate demo and non-demo tests
       const demoTests = tests.filter(
         (test) => test.isDemo || test.testType?.toLowerCase() === "demo"
       );
       const nonDemoTests = tests.filter(
         (test) => !test.isDemo && test.testType?.toLowerCase() !== "demo"
       );
-
-      // Take 1-2 demo tests and 1-2 non-demo tests (total 3)
-      const selectedDemoTests = demoTests.slice(0, 2); // Take up to 2 demo tests
+      const selectedDemoTests = demoTests.slice(0, 2); 
       const remainingSlots = 3 - selectedDemoTests.length;
-      const selectedNonDemoTests = nonDemoTests.slice(0, remainingSlots); // Fill remaining slots
-
+      const selectedNonDemoTests = nonDemoTests.slice(0, remainingSlots); 
       const filteredTests = [
         ...selectedDemoTests,
         ...selectedNonDemoTests,
       ].slice(0, 3);
-
-      console.log("📊 Displaying tests:", {
-        total: tests.length,
-        demoTests: selectedDemoTests.length,
-        lockedTests: selectedNonDemoTests.length,
-        displaying: filteredTests.length,
-      });
-
       setDisplayTests(filteredTests);
     } else {
       setDisplayTests([]);
     }
   }, [tests]);
-
-  // ✅ Load tests on mount
   useEffect(() => {
     dispatch(getAllTests());
-
     return () => {
       dispatch(clearTests());
     };
   }, [dispatch, user?.uid]);
-
-  // ✅ Set up real-time listener for user data changes
   useEffect(() => {
     if (!user?.uid) {
       setRealtimeUserData(null);
       return;
     }
-
-    console.log("🔄 Setting up real-time listener for user:", user.uid);
     setCheckingSubscription(true);
-
-    // ✅ Real-time listener using onSnapshot
     const userRef = doc(db, "users", user.uid);
     const unsubscribe = onSnapshot(
       userRef,
       (docSnapshot) => {
         if (docSnapshot.exists()) {
           const userData = docSnapshot.data();
-          console.log("✅ Real-time user data updated:", {
-            subscription: userData.subscription,
-            timestamp: new Date().toISOString(),
-          });
           setRealtimeUserData(userData);
           setCheckingSubscription(false);
         } else {
-          console.log("⚠️ User document not found");
           setRealtimeUserData(null);
           setCheckingSubscription(false);
         }
       },
       (error) => {
-        console.error("❌ Error in real-time listener:", error);
         setCheckingSubscription(false);
       }
     );
-
-    // ✅ Cleanup listener on unmount
     return () => {
-      console.log("🧹 Cleaning up real-time listener");
       unsubscribe();
     };
   }, [user?.uid]);
-
-  // ✅ Check access based on real-time user data
   const checkAccess = (test) => {
-    // Demo tests are always accessible
     if (test.isDemo || test.testType?.toLowerCase() === "demo") {
       return true;
     }
-
     if (!user) {
       return false;
     }
-
-    // ✅ Use real-time data if available, otherwise fall back to Redux user
     const userData = realtimeUserData || user;
-
-    console.log("🔍 Checking access:", {
-      testName: test.testName,
-      hasRealtimeData: !!realtimeUserData,
-      subscription: userData.subscription,
-      isArray: Array.isArray(userData.subscription),
-      subscriptionLength: userData.subscription?.length || 0,
-    });
-
     if (
       userData.subscription &&
       Array.isArray(userData.subscription) &&
@@ -141,55 +93,30 @@ const GetAllTest = () => {
       const activeSubscription = userData.subscription.find((sub) => {
         return isSubscriptionActive(sub);
       });
-
       const hasAccess = !!activeSubscription;
-      console.log("✅ Access check result:", {
-        hasAccess,
-        activeSubscription: activeSubscription
-          ? {
-              plan: activeSubscription.plan,
-              status: activeSubscription.status,
-              expiresAt: activeSubscription.expiresAt,
-            }
-          : null,
-      });
       return hasAccess;
     }
-
-    console.log("❌ No active subscription found");
     return false;
   };
-
   const handleStartClick = async (test) => {
     if (!user) {
       toast.error("Please log in to start the test.");
       navigate("/login");
       return;
     }
-
-    // ✅ No need to fetch again - we already have real-time data
-    console.log("🎯 Starting test with current subscription status");
-
     if (!checkAccess(test)) {
       toast.error("Upgrade to PRO or Premium to access this test!");
       navigate("/");
       return;
     }
-
-    console.log("✅ Access granted. Opening instructions for:", test.testName);
     setSelectedTest(test);
     setShowInstructions(true);
   };
-
   const handleConfirmInstructions = async () => {
     if (!selectedTest) return;
-
     try {
       setStarting(selectedTest.id);
-      console.log("🚀 Initializing test:", selectedTest.id);
-
       const result = await dispatch(startTest(selectedTest.id)).unwrap();
-
       if (result?.testId) {
         navigate(`/test/${result.testId}`);
       } else {
@@ -203,7 +130,6 @@ const GetAllTest = () => {
       setStarting(null);
     }
   };
-
   const getTypeColor = (type) => {
     const map = {
       demo: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
@@ -217,8 +143,6 @@ const GetAllTest = () => {
       map[type?.toLowerCase()] || "bg-white/5 text-gray-400 border-white/10"
     );
   };
-
-  // ✅ Check premium access using real-time data
   const hasPremiumAccess = () => {
     const userData = realtimeUserData || user;
     if (
@@ -230,7 +154,6 @@ const GetAllTest = () => {
     }
     return userData.subscription.some((sub) => isSubscriptionActive(sub));
   };
-
   return (
     <div className="relative w-full overflow-hidden">
       <div className="relative z-10 w-full max-w-7xl mx-auto py-12 px-6">
@@ -241,19 +164,16 @@ const GetAllTest = () => {
               Library Live
             </span>
           </div>
-
           <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
             Next-Gen Chemistry{" "}
             <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 to-teal-500">
               Testing
             </span>
           </h1>
-
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
             Experience decentralized learning. Start with free demo tests or
             unlock the full potential with our PRO network.
           </p>
-
           {user && (
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/10 bg-white/5 text-sm">
               <div
@@ -269,7 +189,6 @@ const GetAllTest = () => {
             </div>
           )}
         </div>
-
         {allTestsLoading || checkingSubscription ? (
           <div className="flex flex-col items-center justify-center py-16">
             <div className="w-16 h-16 border-4 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin"></div>
@@ -293,7 +212,6 @@ const GetAllTest = () => {
               const isDemo =
                 test.isDemo || test.testType?.toLowerCase() === "demo";
               const isStarting = starting === test.id;
-
               return (
                 <motion.div
                   key={test.id || i}
@@ -303,7 +221,6 @@ const GetAllTest = () => {
                   className="group relative bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-6 hover:border-emerald-500/30 transition-all duration-300 flex flex-col justify-between overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-linear-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
                   {!isDemo && (
                     <div className="absolute top-0 right-0">
                       <div className="bg-linear-to-bl from-amber-400 to-orange-500 text-black text-[10px] font-bold px-3 py-1.5 rounded-bl-xl shadow-lg">
@@ -311,7 +228,6 @@ const GetAllTest = () => {
                       </div>
                     </div>
                   )}
-
                   <div>
                     <div className="flex items-start justify-between mb-4">
                       <span
@@ -322,17 +238,14 @@ const GetAllTest = () => {
                         {test.testType}
                       </span>
                     </div>
-
                     <h2 className="text-xl font-bold text-white mb-3 line-clamp-1 group-hover:text-emerald-400 transition-colors">
                       {test.testName}
                     </h2>
-
                     <p className="text-gray-400 text-sm mb-6 line-clamp-2 h-10">
                       {test.title ||
                         test.description ||
                         "Standardized assessment protocol for chemistry evaluation."}
                     </p>
-
                     <div className="grid grid-cols-2 gap-3 mb-6">
                       <div className="bg-white/5 border border-white/5 rounded-xl p-3">
                         <div className="text-xs text-gray-500 mb-1">
@@ -356,7 +269,6 @@ const GetAllTest = () => {
                       </div>
                     </div>
                   </div>
-
                   <button
                     onClick={() => handleStartClick(test)}
                     disabled={locked || isStarting || testStarting}
@@ -389,7 +301,6 @@ const GetAllTest = () => {
             })}
           </div>
         )}
-
         {showInstructions && (
           <InstructionModal
             test={selectedTest}
@@ -404,5 +315,4 @@ const GetAllTest = () => {
     </div>
   );
 };
-
 export default GetAllTest;

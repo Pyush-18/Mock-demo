@@ -10,7 +10,6 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "../config/firebase";
 
-// ✅ Get all tests that have attempts (for leaderboard test list)
 export const getAllTestAttempts = createAsyncThunk(
   "attempt/getAllTestAttempts",
   async (_, { rejectWithValue }) => {
@@ -18,32 +17,22 @@ export const getAllTestAttempts = createAsyncThunk(
       const userId = auth.currentUser?.uid;
       if (!userId) throw new Error("User not authenticated");
 
-      // Get user data
       const userDoc = await getDoc(doc(db, "users", userId));
       if (!userDoc.exists()) throw new Error("User not found");
 
       const userData = userDoc.data();
       const userRole = userData.role;
 
-      console.log("👤 Current user role:", userRole);
 
-      // Determine which tests the user can see
       let allowedCreatorId = null;
 
       if (userRole === "student") {
-        // Students see tests from their admin
         allowedCreatorId = userData.createdBy;
-        console.log("📚 Student viewing admin's tests:", allowedCreatorId);
       } else if (userRole === "admin") {
-        // Admins see their own tests
         allowedCreatorId = userId;
-        console.log("👨‍💼 Admin viewing own tests");
       } else if (userRole === "superadmin") {
-        // Superadmin sees all tests
-        console.log("🔑 Superadmin viewing all tests");
       }
 
-      // Get question papers based on role
       const questionsRef = collection(db, "questions");
       let questionsQuery;
 
@@ -55,18 +44,15 @@ export const getAllTestAttempts = createAsyncThunk(
           where("createdBy", "==", allowedCreatorId)
         );
       } else {
-        console.log("❌ No creator ID found for student");
         return [];
       }
 
       const questionsSnapshot = await getDocs(questionsQuery);
 
       if (questionsSnapshot.empty) {
-        console.log("📊 No tests found for this user");
         return [];
       }
 
-      // Get test IDs
       const testIds = [];
       const testsData = {};
       questionsSnapshot.forEach((doc) => {
@@ -74,13 +60,10 @@ export const getAllTestAttempts = createAsyncThunk(
         testsData[doc.id] = doc.data();
       });
 
-      console.log("📊 Found", testIds.length, "tests");
-
       if (testIds.length === 0) {
         return [];
       }
 
-      // Get all attempts for these tests
       const batchSize = 10;
       const allTests = [];
 
@@ -97,7 +80,6 @@ export const getAllTestAttempts = createAsyncThunk(
 
         const attemptsSnapshot = await getDocs(attemptsQuery);
 
-        // Group attempts by testId
         const testAttemptsMap = {};
 
         for (const docSnapshot of attemptsSnapshot.docs) {
@@ -115,12 +97,10 @@ export const getAllTestAttempts = createAsyncThunk(
           });
         }
 
-        // Create test objects with attempt info
         batch.forEach((testId) => {
           const testData = testsData[testId];
           const attempts = testAttemptsMap[testId] || [];
 
-          // Check if current user has attempted
           const userHasAttempted = attempts.some(
             (attempt) => attempt.userId === userId
           );
@@ -137,27 +117,20 @@ export const getAllTestAttempts = createAsyncThunk(
           });
         });
       }
-
-      console.log("✅ Processed", allTests.length, "tests for leaderboard");
       return allTests;
     } catch (error) {
-      console.error("❌ Error fetching test attempts:", error);
+      console.error("Error fetching test attempts:", error);
       return rejectWithValue(error.message);
     }
   }
 );
 
-// ✅ Get leaderboard data for a specific test
 export const getAttemptsByTest = createAsyncThunk(
   "attempt/getAttemptsByTest",
   async (testId, { rejectWithValue }) => {
     try {
       const userId = auth.currentUser?.uid;
       if (!userId) throw new Error("User not authenticated");
-
-      console.log("🎯 Fetching leaderboard for test:", testId);
-
-      // Verify the test exists and user has access
       const testDoc = await getDoc(doc(db, "questions", testId));
       if (!testDoc.exists()) {
         throw new Error("Test not found");
@@ -165,12 +138,10 @@ export const getAttemptsByTest = createAsyncThunk(
 
       const testData = testDoc.data();
 
-      // Check user permissions
       const userDoc = await getDoc(doc(db, "users", userId));
       const userData = userDoc.data();
       const userRole = userData.role;
 
-      // Verify access
       if (userRole === "student" && userData.createdBy) {
         if (testData.createdBy !== userData.createdBy) {
           throw new Error("You don't have access to this test");
@@ -181,19 +152,17 @@ export const getAttemptsByTest = createAsyncThunk(
         }
       }
 
-      // Get all attempts for this test
       const attemptsRef = collection(db, "testAttempts");
       const q = query(
         attemptsRef,
         where("testId", "==", testId),
         where("submittedAt", "!=", null),
-        orderBy("submittedAt", "desc") // ✅ Required when using != null
+        orderBy("submittedAt", "desc") 
       );
 
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        console.log("📊 No attempts found for test:", testId);
         return { data: [] };
       }
 
@@ -202,7 +171,6 @@ export const getAttemptsByTest = createAsyncThunk(
       for (const docSnapshot of querySnapshot.docs) {
         const attemptData = docSnapshot.data();
 
-        // Get user details
         let userName = "Unknown";
         let userEmail = "N/A";
         let attemptUserId = attemptData.userId;
@@ -221,32 +189,23 @@ export const getAttemptsByTest = createAsyncThunk(
           score: attemptData.score || 0,
           submittedAt: attemptData.submittedAt?.toDate(),
           user: {
-            _id: attemptUserId, // ✅ This matches your LeaderboardContext expectation
+            _id: attemptUserId,
             name: userName,
             email: userEmail,
           },
         });
       }
 
-      // ✅ Sort by score in descending order (highest first) in memory
       attempts.sort((a, b) => b.score - a.score);
 
-      console.log("✅ Found", attempts.length, "attempts for leaderboard");
-      console.log("👤 Current user ID:", userId);
-      console.log(
-        "📊 Sample attempt user IDs:",
-        attempts.slice(0, 3).map((a) => a.user._id)
-      );
 
       return { data: attempts };
     } catch (error) {
-      console.error("❌ Error fetching test leaderboard:", error);
       return rejectWithValue(error.message);
     }
   }
 );
 
-// ✅ Get attempts for admin dashboard (different from leaderboard)
 export const getTestAttemptsByAdmin = createAsyncThunk(
   "attempt/getTestAttemptsByAdmin",
   async (testId, { rejectWithValue }) => {
@@ -254,7 +213,6 @@ export const getTestAttemptsByAdmin = createAsyncThunk(
       const userId = auth.currentUser?.uid;
       if (!userId) throw new Error("User not authenticated");
 
-      // Verify the test belongs to this admin
       const testDoc = await getDoc(doc(db, "questions", testId));
       if (!testDoc.exists()) {
         throw new Error("Test not found");
@@ -262,7 +220,6 @@ export const getTestAttemptsByAdmin = createAsyncThunk(
 
       const testData = testDoc.data();
 
-      // Check if user is superadmin or the test creator
       const userDoc = await getDoc(doc(db, "users", userId));
       const userRole = userDoc.data()?.role;
 
@@ -313,7 +270,7 @@ export const getTestAttemptsByAdmin = createAsyncThunk(
 
       return attempts;
     } catch (error) {
-      console.error("❌ Error fetching admin attempts:", error);
+      console.error("Error fetching admin attempts:", error);
       return rejectWithValue(error.message);
     }
   }
@@ -322,9 +279,9 @@ export const getTestAttemptsByAdmin = createAsyncThunk(
 const attemptSlice = createSlice({
   name: "attempt",
   initialState: {
-    attemptedTests: [], // ✅ For leaderboard test list
-    leaderboardData: [], // ✅ For specific test leaderboard
-    testAttempts: [], // ✅ For admin dashboard
+    attemptedTests: [], 
+    leaderboardData: [], 
+    testAttempts: [],
     loading: false,
     error: null,
   },

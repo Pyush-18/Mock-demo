@@ -94,7 +94,6 @@ const TestInterface = () => {
  
   useEffect(() => {
     if (testId && !hasInitialized.current) {
-      console.log("🚀 Loading first question, testId:", testId);
       hasInitialized.current = true;
       setCurrentQuestionIndex(0);
       getQuestion(testId, 0);
@@ -105,7 +104,6 @@ const TestInterface = () => {
   useEffect(() => {
     if (testId && hasInitialized.current && !isChangingQuestion.current) {
       if (currentIndex !== currentQuestionIndex) {
-        console.log("📝 Fetching question at index:", currentIndex);
         isChangingQuestion.current = true;
         setCurrentQuestionIndex(currentIndex);
         getQuestion(testId, currentIndex);

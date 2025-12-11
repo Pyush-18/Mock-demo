@@ -17,7 +17,6 @@ import {
   uploadCSVToCloudinary,
   uploadMultipleToCloudinary,
 } from "../config/cloudinaryUpload";
-
 export const uploadCSVQuestions = createAsyncThunk(
   "questions/uploadCSVQuestions",
   async (
@@ -40,15 +39,12 @@ export const uploadCSVQuestions = createAsyncThunk(
     try {
       const userId = auth.currentUser?.uid;
       if (!userId) throw new Error("User not authenticated");
-
       if (!categoryId || !categoryName || !subject) {
         throw new Error("Category and subject are required");
       }
-
       let parsedQuestions = [];
       let csvUrl = null;
       let csvPublicId = null;
-
       if (uploadedViaAI && questions) {
         parsedQuestions = questions.map((q) => ({
           questionText: q.questionText || "",
@@ -64,28 +60,23 @@ export const uploadCSVQuestions = createAsyncThunk(
             }),
         }));
       }
-
       else {
         if (!csvFile) {
           throw new Error("CSV file is required");
         }
-
         const uploadResult = await uploadCSVToCloudinary(csvFile);
         csvUrl = uploadResult.url;
         csvPublicId = uploadResult.publicId;
-
         const csvText = await csvFile.text();
         const lines = csvText
           .split("\n")
           .map((line) => line.trim())
           .filter((line) => line.length > 0);
-
         if (lines.length < 2) {
           throw new Error(
             "CSV file appears empty or invalid. Please use AI Parser for better results."
           );
         }
-
         const headers = lines[0].split(",").map((h) =>
           h
             .trim()
@@ -93,7 +84,6 @@ export const uploadCSVQuestions = createAsyncThunk(
             .replace(/[_\-\s]/g, "")
             .replace(/['"]/g, "")
         );
-
         const findHeader = (possibleNames) => {
           for (let name of possibleNames) {
             const cleanName = name.toLowerCase().replace(/[_\-\s]/g, "");
@@ -102,7 +92,6 @@ export const uploadCSVQuestions = createAsyncThunk(
           }
           return -1;
         };
-
         const questionIndex = findHeader([
           "question",
           "questiontext",
@@ -159,7 +148,6 @@ export const uploadCSVQuestions = createAsyncThunk(
           "reasoning",
         ]);
         const imagesIndex = findHeader(["images", "image", "pics", "pictures"]);
-
         if (
           questionIndex === -1 ||
           optionAIndex === -1 ||
@@ -171,16 +159,13 @@ export const uploadCSVQuestions = createAsyncThunk(
             `Suggestion: Use AI Parser mode for automatic question extraction from any document format.`
           );
         }
-
         let successCount = 0;
         let failedCount = 0;
-
         for (let i = 1; i < lines.length; i++) {
           try {
             const rowValues = [];
             let currentValue = "";
             let insideQuotes = false;
-
             for (let char of lines[i]) {
               if (char === '"') {
                 insideQuotes = !insideQuotes;
@@ -192,17 +177,14 @@ export const uploadCSVQuestions = createAsyncThunk(
               }
             }
             rowValues.push(currentValue.trim()); 
-
             const cleanedValues = rowValues.map((v) =>
               v.replace(/^["']|["']$/g, "").trim()
             );
-
             const questionText = cleanedValues[questionIndex] || "";
             const optionA = cleanedValues[optionAIndex] || "";
             const optionB = cleanedValues[optionBIndex] || "";
             const optionC = cleanedValues[optionCIndex] || "";
             const optionD = cleanedValues[optionDIndex] || "";
-
             if (!questionText || !optionA || !optionB || !optionC || !optionD) {
               console.warn(
                 `Row ${i + 1}: Missing required fields, skipping`
@@ -210,13 +192,11 @@ export const uploadCSVQuestions = createAsyncThunk(
               failedCount++;
               continue;
             }
-
             let correctAnswer = "";
             if (answerIndex !== -1) {
               const answerValue = cleanedValues[answerIndex]
                 .trim()
                 .toUpperCase();
-
               if (answerValue === "A" || answerValue === "1") {
                 correctAnswer = optionA;
               } else if (answerValue === "B" || answerValue === "2") {
@@ -237,12 +217,10 @@ export const uploadCSVQuestions = createAsyncThunk(
             } else {
               correctAnswer = optionA;
             }
-
             const questionLevel =
               levelIndex !== -1
                 ? cleanedValues[levelIndex] || "Medium"
                 : "Medium";
-
             const images =
               imagesIndex !== -1 && cleanedValues[imagesIndex]
                 ? cleanedValues[imagesIndex]
@@ -250,10 +228,8 @@ export const uploadCSVQuestions = createAsyncThunk(
                     .map((img) => img.trim())
                     .filter(Boolean)
                 : [];
-
             const explanation =
               explanationIndex !== -1 ? cleanedValues[explanationIndex] : null;
-
             const questionData = {
               questionText: questionText,
               options: [optionA, optionB, optionC, optionD].filter(
@@ -266,7 +242,6 @@ export const uploadCSVQuestions = createAsyncThunk(
             if (explanation && explanation.trim() !== "") {
               questionData.explanation = explanation.trim();
             }
-
             parsedQuestions.push(questionData);
             successCount++;
           } catch (rowError) {
@@ -274,7 +249,6 @@ export const uploadCSVQuestions = createAsyncThunk(
             failedCount++;
           }
         }
-
         if (failedCount > successCount || parsedQuestions.length === 0) {
           throw new Error(
             ` Recommended Solution: Use AI Parser mode for automatic question extraction.
@@ -282,11 +256,9 @@ export const uploadCSVQuestions = createAsyncThunk(
           );
         }
       }
-
       if (parsedQuestions.length === 0) {
         throw new Error(`Recommended Solution: Please use AI Parser mode .`);
       }
-
       const questionSetData = {
         testName: testName || "",
         title: title || "",
@@ -301,7 +273,6 @@ export const uploadCSVQuestions = createAsyncThunk(
         uploadedViaAI: uploadedViaAI || false,
         createdAt: serverTimestamp(),
       };
-
       if (subcategory) {
         questionSetData.subcategory = subcategory;
       }
@@ -311,7 +282,6 @@ export const uploadCSVQuestions = createAsyncThunk(
       if (csvPublicId) {
         questionSetData.csvPublicId = csvPublicId;
       }
-
       const docRef = await addDoc(collection(db, "questions"), questionSetData);
       return {
         success: true,
@@ -326,7 +296,6 @@ export const uploadCSVQuestions = createAsyncThunk(
       };
     } catch (error) {
       let errorMessage = error.message;
-
       if (
         errorMessage.includes("Cannot detect") ||
         errorMessage.includes("format parsing failed") ||
@@ -342,7 +311,6 @@ export const uploadCSVQuestions = createAsyncThunk(
     }
   }
 );
-
 export const uploadAIParsedQuestions = createAsyncThunk(
   "questions/uploadAIParsedQuestions",
   async (
@@ -364,15 +332,12 @@ export const uploadAIParsedQuestions = createAsyncThunk(
     try {
       const userId = auth.currentUser?.uid;
       if (!userId) throw new Error("User not authenticated");
-
       if (!questions || questions.length === 0) {
         throw new Error("No questions provided");
       }
-
       if (!categoryId || !categoryName || !subject) {
         throw new Error("Category and subject are required");
       }
-
       const formattedQuestions = questions.map((q) => ({
         questionText: q.questionText,
         options: [q.optionA, q.optionB, q.optionC, q.optionD].filter(Boolean),
@@ -381,7 +346,6 @@ export const uploadAIParsedQuestions = createAsyncThunk(
         questionLevel: q.questionLevel || "Medium",
         explanation: q.explanation || null,
       }));
-
       const questionSetData = {
         testName,
         title,
@@ -399,9 +363,7 @@ export const uploadAIParsedQuestions = createAsyncThunk(
         totalQuestions: formattedQuestions.length,
         createdAt: serverTimestamp(),
       };
-
       const docRef = await addDoc(collection(db, "questions"), questionSetData);
-
       return {
         success: true,
         message: `Successfully uploaded ${formattedQuestions.length} AI-parsed questions`,
@@ -415,32 +377,25 @@ export const uploadAIParsedQuestions = createAsyncThunk(
     }
   }
 );
-
 export const updateSingleQuestion = createAsyncThunk(
   "questions/updateSingleQuestion",
   async ({ testId, questionIndex, updates }, { rejectWithValue }) => {
     try {
       const testRef = doc(db, "questions", testId);
       const testDoc = await getDoc(testRef);
-
       if (!testDoc.exists()) {
         throw new Error("Test not found");
       }
-
       const testData = testDoc.data();
       const questions = testData.questions || [];
-
       if (questionIndex < 0 || questionIndex >= questions.length) {
         throw new Error("Question not found");
       }
-
       questions[questionIndex] = {
         ...questions[questionIndex],
         ...updates,
       };
-
       await updateDoc(testRef, { questions });
-
       return {
         success: true,
         message: "Question updated successfully",
@@ -451,77 +406,56 @@ export const updateSingleQuestion = createAsyncThunk(
     }
   }
 );
-
 export const addQuestionImages = createAsyncThunk(
   "questions/addQuestionImages",
   async ({ testId, questionIndex, imageFiles }, { rejectWithValue }) => {
     try {
-      console.log("RAW FORMDATA:", Array.from(imageFiles.entries()));
       const filesArray = imageFiles.getAll("file");
-      console.log("FILES ARRAY:", filesArray);
-
       if (!filesArray || filesArray.length === 0) {
         throw new Error("No image files provided");
       }
-
       const testRef = doc(db, "questions", testId);
       const testDoc = await getDoc(testRef);
-
       if (!testDoc.exists()) throw new Error("Test not found");
-
       const testData = testDoc.data();
       const questions = testData.questions || [];
-
       if (questionIndex < 0 || questionIndex >= questions.length) {
         throw new Error("Question not found");
       }
-
       const uploadResults = await uploadMultipleToCloudinary(filesArray, {
         folder: "questionImages",
         resourceType: "image",
       });
-
-      console.log("CLOUDINARY RESULTS:", uploadResults);
-
       const imageUrls = uploadResults.map((r) => r.url);
-
       questions[questionIndex].images = [
         ...(questions[questionIndex].images || []),
         ...imageUrls,
       ];
-
       await updateDoc(testRef, { questions });
-
       return {
         success: true,
         message: "Images added successfully",
         data: questions[questionIndex],
       };
     } catch (error) {
-      console.log("Error adding question images:", error);
       return rejectWithValue(error.message);
     }
   }
 );
-
 export const deleteQuestionImage = createAsyncThunk(
   "questions/deleteQuestionImage",
   async ({ testId, questionIndex, imageIndex }, { rejectWithValue }) => {
     try {
       const testRef = doc(db, "questions", testId);
       const testDoc = await getDoc(testRef);
-
       if (!testDoc.exists()) {
         throw new Error("Test not found");
       }
-
       const testData = testDoc.data();
       const questions = testData.questions || [];
-
       if (questionIndex < 0 || questionIndex >= questions.length) {
         throw new Error("Question not found");
       }
-
       const question = questions[questionIndex];
       if (
         !question.images ||
@@ -530,12 +464,9 @@ export const deleteQuestionImage = createAsyncThunk(
       ) {
         throw new Error("Image not found");
       }
-
       question.images.splice(imageIndex, 1);
       questions[questionIndex] = question;
-
       await updateDoc(testRef, { questions });
-
       return {
         success: true,
         message: "Image deleted successfully",
@@ -552,29 +483,22 @@ export const deleteQuestionImage = createAsyncThunk(
     }
   }
 );
-
 export const deleteQuestion = createAsyncThunk(
   "questions/deleteQuestion",
   async ({ testId, questionIndex }, { rejectWithValue }) => {
     try {
       const testRef = doc(db, "questions", testId);
       const testDoc = await getDoc(testRef);
-
       if (!testDoc.exists()) {
         throw new Error("Test not found");
       }
-
       const testData = testDoc.data();
       const questions = testData.questions || [];
-
       if (questionIndex < 0 || questionIndex >= questions.length) {
         throw new Error("Question not found");
       }
-
       questions.splice(questionIndex, 1);
-
       await updateDoc(testRef, { questions });
-
       return {
         success: true,
         message: "Question deleted successfully",
@@ -590,20 +514,16 @@ export const deleteQuestion = createAsyncThunk(
     }
   }
 );
-
 export const deleteQuestionPaper = createAsyncThunk(
   "questions/deleteQuestionPaper",
   async (testId, { rejectWithValue }) => {
     try {
       const testRef = doc(db, "questions", testId);
       const testDoc = await getDoc(testRef);
-
       if (!testDoc.exists()) {
         throw new Error("Test not found");
       }
-
       await deleteDoc(testRef);
-
       return {
         success: true,
         message: "Question paper deleted successfully",
@@ -615,22 +535,19 @@ export const deleteQuestionPaper = createAsyncThunk(
     }
   }
 );
-
 export const getAllQuestionPapersByCreator = createAsyncThunk(
   "questions/getAllQuestionPapersByCreator",
   async (_, { rejectWithValue }) => {
     try {
       const userId = auth.currentUser?.uid;
       if (!userId) throw new Error("User not authenticated");
-
       const questionsRef = collection(db, "questions");
       const q = query(
         questionsRef,
-        where("createdBy", "==", userId), // ✅ Filters by current user
+        where("createdBy", "==", userId),
         orderBy("createdAt", "desc")
       );
       const querySnapshot = await getDocs(q);
-
       if (querySnapshot.empty) {
         return {
           success: false,
@@ -638,7 +555,6 @@ export const getAllQuestionPapersByCreator = createAsyncThunk(
           data: [],
         };
       }
-
       const papers = [];
       querySnapshot.forEach((doc) => {
         papers.push({
@@ -646,7 +562,6 @@ export const getAllQuestionPapersByCreator = createAsyncThunk(
           ...doc.data(),
         });
       });
-
       return {
         success: true,
         count: papers.length,
@@ -657,31 +572,24 @@ export const getAllQuestionPapersByCreator = createAsyncThunk(
     }
   }
 );
-
 export const getAllQuestionPapers = createAsyncThunk(
   "questions/getAllQuestionPapers",
   async (filterByCreator = true, { rejectWithValue }) => {
     try {
       const questionsRef = collection(db, "questions");
       let q;
-
       if (filterByCreator) {
         const userId = auth.currentUser?.uid;
         if (!userId) throw new Error("User not authenticated");
-
-        // Filter by current user
         q = query(
           questionsRef,
           where("createdBy", "==", userId),
           orderBy("createdAt", "desc")
         );
       } else {
-        // Get all (for superadmin only)
         q = query(questionsRef, orderBy("createdAt", "desc"));
       }
-
       const querySnapshot = await getDocs(q);
-
       const papers = [];
       querySnapshot.forEach((doc) => {
         papers.push({
@@ -689,7 +597,6 @@ export const getAllQuestionPapers = createAsyncThunk(
           ...doc.data(),
         });
       });
-
       return {
         success: true,
         data: papers,
@@ -699,7 +606,6 @@ export const getAllQuestionPapers = createAsyncThunk(
     }
   }
 );
-
 export const getPapersByType = createAsyncThunk(
   "questions/getPapersByType",
   async ({ testType, filterByCreator = true }, { rejectWithValue }) => {
@@ -707,9 +613,7 @@ export const getPapersByType = createAsyncThunk(
       const userId = auth.currentUser?.uid;
       const questionsRef = collection(db, "questions");
       let q;
-
       if (filterByCreator && userId) {
-        // Filter by type AND creator
         q = query(
           questionsRef,
           where("testType", "==", testType),
@@ -717,16 +621,13 @@ export const getPapersByType = createAsyncThunk(
           orderBy("createdAt", "desc")
         );
       } else {
-        // Filter by type only (for superadmin or public view)
         q = query(
           questionsRef,
           where("testType", "==", testType),
           orderBy("createdAt", "desc")
         );
       }
-
       const querySnapshot = await getDocs(q);
-
       if (querySnapshot.empty) {
         return {
           success: false,
@@ -734,12 +635,10 @@ export const getPapersByType = createAsyncThunk(
           data: [],
         };
       }
-
       const papers = [];
       for (const docSnapshot of querySnapshot.docs) {
         const paper = docSnapshot.data();
         let creatorData = null;
-
         if (paper.createdBy) {
           const userDoc = await getDoc(doc(db, "users", paper.createdBy));
           if (userDoc.exists()) {
@@ -749,7 +648,6 @@ export const getPapersByType = createAsyncThunk(
             };
           }
         }
-
         papers.push({
           id: docSnapshot.id,
           testName: paper.testName,
@@ -767,7 +665,6 @@ export const getPapersByType = createAsyncThunk(
           questions: paper.questions,
         });
       }
-
       return {
         success: true,
         count: papers.length,
@@ -778,7 +675,6 @@ export const getPapersByType = createAsyncThunk(
     }
   }
 );
-
 export const getPapersByCategory = createAsyncThunk(
   "questions/getPapersByCategory",
   async ({ categoryId, filterByCreator = true }, { rejectWithValue }) => {
@@ -786,7 +682,6 @@ export const getPapersByCategory = createAsyncThunk(
       const userId = auth.currentUser?.uid;
       const questionsRef = collection(db, "questions");
       let q;
-
       if (filterByCreator && userId) {
         q = query(
           questionsRef,
@@ -801,9 +696,7 @@ export const getPapersByCategory = createAsyncThunk(
           orderBy("createdAt", "desc")
         );
       }
-
       const querySnapshot = await getDocs(q);
-
       if (querySnapshot.empty) {
         return {
           success: false,
@@ -811,7 +704,6 @@ export const getPapersByCategory = createAsyncThunk(
           data: [],
         };
       }
-
       const papers = [];
       querySnapshot.forEach((doc) => {
         papers.push({
@@ -819,7 +711,6 @@ export const getPapersByCategory = createAsyncThunk(
           ...doc.data(),
         });
       });
-
       return {
         success: true,
         count: papers.length,
@@ -830,7 +721,6 @@ export const getPapersByCategory = createAsyncThunk(
     }
   }
 );
-
 export const getPapersBySubject = createAsyncThunk(
   "questions/getPapersBySubject",
   async (
@@ -841,7 +731,6 @@ export const getPapersBySubject = createAsyncThunk(
       const userId = auth.currentUser?.uid;
       const questionsRef = collection(db, "questions");
       let q;
-
       if (filterByCreator && userId) {
         q = query(
           questionsRef,
@@ -858,9 +747,7 @@ export const getPapersBySubject = createAsyncThunk(
           orderBy("createdAt", "desc")
         );
       }
-
       const querySnapshot = await getDocs(q);
-
       if (querySnapshot.empty) {
         return {
           success: false,
@@ -868,7 +755,6 @@ export const getPapersBySubject = createAsyncThunk(
           data: [],
         };
       }
-
       const papers = [];
       querySnapshot.forEach((doc) => {
         papers.push({
@@ -876,7 +762,6 @@ export const getPapersBySubject = createAsyncThunk(
           ...doc.data(),
         });
       });
-
       return {
         success: true,
         count: papers.length,
@@ -887,7 +772,6 @@ export const getPapersBySubject = createAsyncThunk(
     }
   }
 );
-
 export const getPapersBySubcategory = createAsyncThunk(
   "questions/getPapersBySubcategory",
   async (
@@ -898,7 +782,6 @@ export const getPapersBySubcategory = createAsyncThunk(
       const userId = auth.currentUser?.uid;
       const questionsRef = collection(db, "questions");
       let q;
-
       if (filterByCreator && userId) {
         q = query(
           questionsRef,
@@ -917,9 +800,7 @@ export const getPapersBySubcategory = createAsyncThunk(
           orderBy("createdAt", "desc")
         );
       }
-
       const querySnapshot = await getDocs(q);
-
       if (querySnapshot.empty) {
         return {
           success: false,
@@ -927,7 +808,6 @@ export const getPapersBySubcategory = createAsyncThunk(
           data: [],
         };
       }
-
       const papers = [];
       querySnapshot.forEach((doc) => {
         papers.push({
@@ -935,7 +815,6 @@ export const getPapersBySubcategory = createAsyncThunk(
           ...doc.data(),
         });
       });
-
       return {
         success: true,
         count: papers.length,
@@ -946,9 +825,6 @@ export const getPapersBySubcategory = createAsyncThunk(
     }
   }
 );
-
-// Add this to the END of your questionSlice.js extraReducers
-
 const questionSlice = createSlice({
   name: "questions",
   initialState: {
@@ -968,7 +844,6 @@ const questionSlice = createSlice({
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
-    // ✅ Add this to manually clear papers when switching users
     clearPapers: (state) => {
       state.papers = [];
       state.selectedPaper = null;
@@ -991,27 +866,19 @@ const questionSlice = createSlice({
         state.uploadProgress = 0;
         state.error = action.payload;
       })
-
-      // ✅ CRITICAL: Handle getAllQuestionPapersByCreator separately
       .addCase(getAllQuestionPapersByCreator.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getAllQuestionPapersByCreator.fulfilled, (state, action) => {
         state.loading = false;
-        // ✅ Replace papers with creator-specific data
         state.papers = action.payload.data || [];
-        console.log(
-          "✅ Redux: Set papers for creator:",
-          action.payload.data?.length || 0
-        );
       })
       .addCase(getAllQuestionPapersByCreator.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        state.papers = []; // ✅ Clear papers on error
+        state.papers = [];
       })
-
       .addCase(getAllQuestionPapers.fulfilled, (state, action) => {
         state.papers = action.payload.data;
       })
@@ -1065,7 +932,6 @@ const questionSlice = createSlice({
       });
   },
 });
-
 export const {
   clearSelectedPaper,
   setUploadProgress,

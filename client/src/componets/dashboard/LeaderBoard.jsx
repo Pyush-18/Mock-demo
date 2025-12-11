@@ -31,7 +31,6 @@ const Leaderboard = () => {
     refetchTests,
     refetchStats,
   } = useLeaderboard();
-  console.log("selected test", selectedTest);
   const { startTest, setTestnav } = useContext(TestContext);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -107,7 +106,6 @@ const Leaderboard = () => {
   }
 
   const currentUserEntry = leaderboard.find((entry) => entry.isCurrentUser);
-  console.log("current user entry ", currentUserEntry);
 
   const handleClearFilters = () => {
     setSelectedCategory(null);

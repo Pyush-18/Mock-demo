@@ -31,11 +31,7 @@ const LoginModal = ({
       toast.error(error);
       dispatch(clearError());
     }
-    if (message && !isAuthenticated) {
-      toast.success(message);
-      dispatch(clearMessage());
-    }
-  }, [error, message, isAuthenticated, dispatch]);
+  }, [error, dispatch]);
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -43,21 +39,15 @@ const LoginModal = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!formData.email || !formData.password) {
+      toast.error("All fields are required");
+      return;
+    }
+
     try {
-      if (!formData.email || !formData.password) {
-        toast.error("All fields are required");
-        return;
-      }
-
-      const res = await dispatch(login(formData)).unwrap(); 
-      console.log("login response ", res);
-
-      if (res?.message) {
-        toast.success(res.message); 
-      }
+      await dispatch(login(formData)).unwrap();
     } catch (err) {
-      console.log("login error", err);
-      toast.error(err);
+      console.error("Login error:", err);
     }
   };
 

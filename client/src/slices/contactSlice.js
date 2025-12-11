@@ -175,7 +175,6 @@ export const sendContactEmail = createAsyncThunk(
 
       return { success: true, message: "Emails sent successfully" };
     } catch (error) {
-      console.log(error);
       return rejectWithValue(
         error.response?.data?.error || "Email sending failed"
       );

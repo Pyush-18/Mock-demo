@@ -55,7 +55,6 @@ export const getTestHistory = createAsyncThunk(
   "dashboard/getTestHistory",
   async ({ userId, testType = "all" }, { rejectWithValue }) => {
     try {
-      console.log("🔵 Fetching complete test history for:", userId);
 
       const attemptsRef = collection(db, "testAttempts");
       let querySnapshot;
@@ -72,7 +71,6 @@ export const getTestHistory = createAsyncThunk(
         const q = query(attemptsRef, where("userId", "==", userId));
         querySnapshot = await getDocs(q);
       }
-      console.log("📊 Found test history records:", querySnapshot.size);
 
       const history = [];
 
@@ -154,18 +152,15 @@ export const getPerformanceOverview = createAsyncThunk(
   "dashboard/getPerformanceOverview",
   async (userId, { rejectWithValue }) => {
     try {
-      console.log("🔵 Fetching performance for userId:", userId);
 
       const attemptsRef = collection(db, "testAttempts");
       const q = query(attemptsRef, where("userId", "==", userId));
       const querySnapshot = await getDocs(q);
 
-      console.log("📊 Found attempts:", querySnapshot.size);
 
       const attempts = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        console.log("Attempt data:", data);
         attempts.push({ id: doc.id, ...data });
       });
 
@@ -216,7 +211,6 @@ export const getTestAttempts = createAsyncThunk(
   "dashboard/getTestAttempts",
   async ({ userId, testType }, { rejectWithValue }) => {
     try {
-      console.log("🔵 Fetching test attempts for userId:", userId);
 
       const attemptsRef = collection(db, "testAttempts");
       let q;
@@ -240,7 +234,6 @@ export const getTestAttempts = createAsyncThunk(
 
       const querySnapshot = await getDocs(q);
 
-      console.log("📊 Found attempts:", querySnapshot.size);
 
       if (querySnapshot.empty) {
         return [];
@@ -265,7 +258,6 @@ export const getTestAttempts = createAsyncThunk(
                 subject: testData.subject,
                 subcategory: testData.subcategory || null,
               };
-              console.log("✅ Test details found:", testDetails);
             }
           } catch (error) {
             console.error("Error fetching test details:", error);
@@ -289,10 +281,6 @@ export const getTestAttempts = createAsyncThunk(
           subcategory: testDetails.subcategory || null,
         });
       }
-
-      console.log("📦 Returning attempts:", attempts.length);
-      console.log("Sample attempt:", attempts[0]);
-
       return attempts; 
     } catch (error) {
       console.error("❌ Error fetching test attempts:", error);
@@ -306,7 +294,6 @@ export const getTestAttemptById = createAsyncThunk(
   "dashboard/getTestAttemptById",
   async (attemptId, { rejectWithValue }) => {
     try {
-      console.log("🔵 Fetching test attempt:", attemptId);
 
       const attemptRef = doc(db, "testAttempts", attemptId);
       const attemptDoc = await getDoc(attemptRef);
@@ -350,7 +337,6 @@ export const getTestAttemptById = createAsyncThunk(
         };
       });
 
-      console.log("✅ Test attempt loaded with", questions.length, "questions");
 
       return {
         attemptId: attemptDoc.id,
@@ -379,7 +365,6 @@ export const getProgressOverTime = createAsyncThunk(
   "dashboard/getProgressOverTime",
   async ({ userId, testType = "all" }, { rejectWithValue }) => {
     try {
-      console.log("🔵 Fetching progress for:", userId);
 
       const attemptsRef = collection(db, "testAttempts");
       let q = query(
@@ -400,7 +385,6 @@ export const getProgressOverTime = createAsyncThunk(
       }
 
       const querySnapshot = await getDocs(q);
-      console.log("📊 Found progress data:", querySnapshot.size);
 
       const progress = [];
 
@@ -468,7 +452,6 @@ export const getTestComparison = createAsyncThunk(
   "dashboard/getTestComparison",
   async (userId, { rejectWithValue }) => {
     try {
-      console.log("🔵 Fetching test comparison for:", userId);
 
       const userAttemptsRef = collection(db, "testAttempts");
       const userQuery = query(userAttemptsRef, where("userId", "==", userId));
@@ -479,7 +462,6 @@ export const getTestComparison = createAsyncThunk(
         userAttempts.push({ id: doc.id, ...doc.data() });
       });
 
-      console.log("📊 User attempts found:", userAttempts.length);
 
       const userStatsMap = {};
       userAttempts.forEach((attempt) => {
@@ -644,10 +626,6 @@ const dashboardSlice = createSlice({
       .addCase(getTestAttempts.fulfilled, (state, action) => {
         state.loading = false;
         state.testAttempts = action.payload;
-        console.log(
-          "✅ Test attempts stored in state:",
-          state.testAttempts.length
-        );
       })
       .addCase(getTestAttempts.rejected, (state, action) => {
         state.loading = false;

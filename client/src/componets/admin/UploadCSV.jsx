@@ -146,7 +146,6 @@ const UploadCSV = () => {
 
   const handlePDFUpload = async (file) => {
     try {
-      console.log("Reading PDF file...");
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
@@ -160,7 +159,6 @@ const UploadCSV = () => {
       }
 
       fullText = cleanPDFText(fullText);
-      console.log("PDF text extracted, length:", fullText.length);
       return fullText;
     } catch (error) {
       console.error("PDF processing error:", error);
@@ -170,10 +168,8 @@ const UploadCSV = () => {
 
   const handleDOCXUpload = async (file) => {
     try {
-      console.log("Reading DOCX file...");
       const arrayBuffer = await file.arrayBuffer();
       const result = await mammoth.extractRawText({ arrayBuffer });
-      console.log("DOCX text extracted, length:", result.value.length);
       return result.value;
     } catch (error) {
       console.error("DOCX processing error:", error);
@@ -187,7 +183,6 @@ const UploadCSV = () => {
         header: true,
         skipEmptyLines: true,
         complete: (results) => {
-          console.log("CSV parsed:", results.data.length, "rows");
 
           const questions = results.data.map((row) => {
             const correct =
@@ -219,7 +214,6 @@ const UploadCSV = () => {
               q.questionText && q.optionA && q.optionB && q.optionC && q.optionD
           );
 
-          console.log("Valid questions:", validQuestions.length);
           resolve(validQuestions);
         },
         error: (error) => {
@@ -256,12 +250,10 @@ const UploadCSV = () => {
 
   const parseFileWithAI = async (fileContent, fileName) => {
     try {
-      console.log("🤖 Starting AI parsing...");
       const chunks = splitIntoChunks(fileContent, 3000);
       let allQuestions = [];
 
       for (let i = 0; i < chunks.length; i++) {
-        console.log(`Processing chunk ${i + 1}/${chunks.length}...`);
         const prompt = `
         You are an expert academic assistant and data parser. Your job is to read the provided document text and extract multiple-choice questions (MCQs) into structured JSON.
 
@@ -389,8 +381,6 @@ const UploadCSV = () => {
         const questions = Array.isArray(parsed)
           ? parsed
           : parsed.questions || [];
-
-        console.log(`Chunk ${i + 1}: Extracted ${questions.length} questions`);
         allQuestions = allQuestions.concat(questions);
       }
 
@@ -399,8 +389,6 @@ const UploadCSV = () => {
           "No questions found in the document. Please check if the document contains properly formatted multiple-choice questions."
         );
       }
-
-      console.log(`Total questions extracted: ${allQuestions.length}`);
       return allQuestions;
     } catch (error) {
       console.error("AI Parsing Error:", error);
@@ -471,7 +459,6 @@ const UploadCSV = () => {
           }
           setMessage({ type: "info", text: "✅ CSV parsed successfully!" });
         } catch (csvError) {
-          console.log("Direct CSV parsing failed, trying AI:", csvError);
           setMessage({ type: "info", text: "🤖 Using AI to parse CSV..." });
           fileContent = await readFileContent(file);
           questions = await parseFileWithAI(fileContent, file.name);

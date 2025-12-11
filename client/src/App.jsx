@@ -69,11 +69,9 @@ useEffect(() => {
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        console.log("Initial user from localStorage:", parsedUser.uid);
         const currentUserId = auth.currentUser?.uid;
         
         if (currentUserId && currentUserId !== parsedUser.uid) {
-          console.log("⚠️ User mismatch detected. Clearing data...");
           localStorage.clear();
           window.location.reload();
           return;
@@ -82,15 +80,11 @@ useEffect(() => {
         dispatch(setUser(parsedUser));
 
         if (parsedUser?.uid) {
-          console.log("Fetching fresh user data from Firestore...");
           const userRef = doc(db, "users", parsedUser.uid);
           const userSnap = await getDoc(userRef);
 
           if (userSnap.exists()) {
             const freshUserData = userSnap.data();
-            console.log("Fresh user data:", freshUserData);
-            console.log("User role:", freshUserData.role);
-
             const updatedUser = {
               uid: parsedUser.uid,
               ...freshUserData,
@@ -103,7 +97,6 @@ useEffect(() => {
               dispatch(getSubscriptionStatus(parsedUser.uid));
             }
           } else {
-            console.log("⚠️ User document not found. Clearing session...");
             localStorage.clear();
           }
         }

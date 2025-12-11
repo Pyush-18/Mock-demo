@@ -119,7 +119,6 @@ export const getAllTestsByCategory = createAsyncThunk(
         });
       });
 
-      console.log(`✅ Filtered tests for user: ${tests.length} tests found`);
       return tests;
     } catch (error) {
       console.error("Error fetching tests:", error);
@@ -171,7 +170,6 @@ export const getAllTests = createAsyncThunk(
         });
       });
 
-      console.log(`✅ Filtered tests for user: ${tests.length} tests found`);
       return tests;
     } catch (error) {
       return rejectWithValue(error.message);

@@ -25,11 +25,6 @@ const Pricing = () => {
   const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
   const activeSubscription = useMemo(() => {
     const active = getActiveSubscription(user?.subscription);
-    console.log("🔄 Recalculating activeSubscription:", {
-      userSubscription: user?.subscription,
-      activeFound: active,
-      timestamp: new Date().toISOString()
-    });
     return active;
   }, [user, user?.subscription]);
   useEffect(() => {
@@ -39,12 +34,10 @@ const Pricing = () => {
         return;
       }
       try {
-        console.log("🔄 Fetching fresh user data from Firestore...");
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
           const freshUserData = userSnap.data();
-          console.log("✅ Fresh user data:", freshUserData.subscription);
           const updatedUser = {
             ...user,
             subscription: freshUserData.subscription || [],
@@ -89,7 +82,6 @@ const Pricing = () => {
         theme: { color: "#6366F1" },
         handler: async function (response) {
           try {
-            console.log("💳 Payment successful, verifying...");
             const verifyResult = await dispatch(
               verifyPayment({
                 razorpay_payment_id: response.razorpay_payment_id,
@@ -98,13 +90,11 @@ const Pricing = () => {
                 userId: user.uid,
               })
             ).unwrap();
-            console.log("✅ Payment verified:", verifyResult);
             await new Promise((resolve) => setTimeout(resolve, 1000));
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
             if (userSnap.exists()) {
               const freshUserData = userSnap.data();
-              console.log("✅ Fresh subscription data:", freshUserData.subscription);
               const updatedUser = {
                 uid: user.uid,
                 ...freshUserData,
@@ -147,16 +137,6 @@ const Pricing = () => {
     }
   };
   const bestValuePlanId = plans.find((p) => p.duration === 365)?.id || null;
-  useEffect(() => {
-    console.log("📊 Pricing component state:", {
-      userExists: !!user,
-      userId: user?.uid,
-      subscriptionArray: user?.subscription,
-      activeSubscription,
-      hasInitialized: hasInitializedRef.current,
-      timestamp: new Date().toISOString()
-    });
-  }, [user, user?.subscription, activeSubscription]);
   return (
     <div
       id="pricing"

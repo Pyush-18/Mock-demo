@@ -98,7 +98,6 @@ export const getSubscriptionStatus = createAsyncThunk(
       const endDate = activeSub.endDate.toDate
         ? activeSub.endDate.toDate()
         : new Date(activeSub.endDate);
-        console.log("active plan ", activeSub)
 
       return {
         planType: activeSub.plan || "Premium",

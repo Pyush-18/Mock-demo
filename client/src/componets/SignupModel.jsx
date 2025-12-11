@@ -117,7 +117,6 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
     } catch (error) {
       const errorMessage = typeof error === 'string' ? error : error?.message || "Registration failed";
       toast.error(errorMessage);
-      console.log("direct signup error", error);
     }
   };
 

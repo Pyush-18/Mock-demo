@@ -128,7 +128,6 @@ export const submitRegistrationRequest = createAsyncThunk(
         requestId: requestDoc.id,
       };
     } catch (error) {
-      console.log("registration request error ", error);
       return rejectWithValue(
         error?.message || error || "Failed to submit registration request"
       );

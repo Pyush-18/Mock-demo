@@ -7,15 +7,7 @@ const TestAttempts = () => {
     const [selectedTest, setSelectedTest] = useState(null);
     const [isFetching, setIsFetching] = useState(false);
     const safeTestAttempts = Array.isArray(testAttempts) ? testAttempts : [];
-    // useEffect(() => {
-    //     console.log("TestAttempts Debug:");
-    //     console.log("- isAuthenticated:", isAuthenticated);
-    //     console.log("- questionPapers count:", questionPapers?.length || 0);
-    //     console.log("- testAttempts count:", safeTestAttempts.length);
-    //     console.log("- loading:", loading);
-    // }, [isAuthenticated, questionPapers, safeTestAttempts, loading]);
     const handleTestSelect = async (testId) => {
-        console.log("🎯 Selected test ID:", testId);
         setSelectedTest(testId);
         if (testId) {
             setIsFetching(true);

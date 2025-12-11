@@ -30,13 +30,11 @@ async function sendEmailHandler(req, res) {
 
     const info = await transporter.sendMail(mailOptions);
 
-    console.log("Email sent successfully:", info.messageId);
     return res.status(200).json({
       success: true,
       messageId: info.messageId,
     });
   } catch (err) {
-    console.log("Error sending email:", err.message);
     return res.status(500).json({
       success: false,
       message: err.message,

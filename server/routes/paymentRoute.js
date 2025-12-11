@@ -47,7 +47,6 @@ router.post("/create-order", async (req, res) => {
       },
     });
 
-    console.log("Razorpay order created:", order.id);
 
     await db.collection("orders").add({
       user: userId,
@@ -117,9 +116,6 @@ router.post("/verify", async (req, res) => {
       });
     }
 
-    console.log("Payment signature verified for order:", razorpay_order_id);
-
-    // Find order in Firestore
     const ordersSnapshot = await db
       .collection("orders")
       .where("razorpayOrderId", "==", razorpay_order_id)
@@ -192,7 +188,6 @@ router.post("/verify", async (req, res) => {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    console.log("User subscription updated:", userId);
 
     // Get updated user data
     const updatedUserDoc = await userRef.get();

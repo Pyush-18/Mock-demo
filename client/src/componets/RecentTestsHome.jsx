@@ -29,7 +29,6 @@ const RecentTestsHome = () => {
   }, [dispatch]);
 
   const handleCategorySelect = (category, subject, subcategory) => {
-    console.log("Selected:", { category, subject, subcategory });
     
     const filters = {
       categoryName: category.name,
@@ -40,8 +39,6 @@ const RecentTestsHome = () => {
     if (subcategory) {
       filters.subcategory = subcategory;
     }
-
-    console.log("Filters:", filters);
 
     dispatch(getAllTestsByCategory(filters));
   };
@@ -90,7 +87,6 @@ const RecentTestsHome = () => {
         toast.error("Failed to initialize test.");
       }
     } catch (error) {
-      console.log(error)
       toast.error("Failed to start test.");
     } finally {
       setShowInstructions(false);

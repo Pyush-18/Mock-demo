@@ -107,7 +107,6 @@ const ProfilePage = () => {
 
   useEffect(() => {
     if (message) {
-      console.log("Success:", message);
       setTimeout(() => {
         dispatch(clearMessage());
       }, 3000);

@@ -37,7 +37,6 @@ const ContactPage = () => {
     e.preventDefault();
     if (!validateForm()) return;
     setLoading(true);
-    console.log("form data ", formData)
     try {
       const result = await dispatch(sendContactEmail(formData)).unwrap();
       if(result.success){

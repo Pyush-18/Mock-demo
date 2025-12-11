@@ -27,7 +27,6 @@ const SubscriptionMonitor = () => {
       const isCurrentlyActive = !!activeSubscription;
 
       if (previousActiveStatusRef.current === true && !isCurrentlyActive) {
-        console.log("🔴 Subscription expired! Forcing UI update...");
         
         const updatedUser = {
           ...user,
@@ -68,7 +67,6 @@ const SubscriptionMonitor = () => {
       return;
     }
 
-    console.log("🔵 Setting up subscription monitor for user:", user.uid);
     const userRef = doc(db, "users", user.uid);
 
     const unsubscribe = onSnapshot(
@@ -76,7 +74,7 @@ const SubscriptionMonitor = () => {
       (snap) => {
         if (snap.exists()) {
           const firestoreData = snap.data();
-          console.log("🔄 Subscription update from Firestore:", firestoreData.subscription);
+        
 
           dispatch((dispatch, getState) => {
             const currentUser = getState().auth.user;
@@ -86,19 +84,17 @@ const SubscriptionMonitor = () => {
               subscription: firestoreData.subscription || [],
             };
 
-            console.log("✅ Updating user with new subscription data");
             dispatch(setUser(updatedUser));
             localStorage.setItem("user", JSON.stringify(updatedUser));
           });
         }
       },
       (error) => {
-        console.error("❌ Subscription monitor error:", error);
+        console.error("Subscription monitor error:", error);
       }
     );
 
     return () => {
-      console.log("🔴 Cleaning up subscription monitor");
       unsubscribe();
     };
   }, [user?.uid, dispatch]);

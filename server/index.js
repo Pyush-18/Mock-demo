@@ -5,8 +5,6 @@ const admin = require("firebase-admin");
 const emailRouter = require("./routes/sendEmailRoute");
 
 dotenv.config();
-
-// const serviceAccount = require("./serviceAccountKey.json");
 const serviceAccount = {
   type: process.env.FIREBASE_TYPE,
   project_id: process.env.FIREBASE_PROJECT_ID,
