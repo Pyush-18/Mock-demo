@@ -20,12 +20,11 @@ const generateRegistrationCode = () => {
   return Math.random().toString(36).substring(2, 10).toUpperCase();
 };
 
-// Create a new collection for registration requests
+
 export const submitRegistrationRequest = createAsyncThunk(
   "admin/submitRegistrationRequest",
   async ({ code, name, email }, { rejectWithValue }) => {
     try {
-      // Verify the code exists
       const usersRef = collection(db, "users");
       const q = query(
         usersRef,
@@ -41,7 +40,15 @@ export const submitRegistrationRequest = createAsyncThunk(
       const adminDoc = querySnapshot.docs[0];
       const adminData = adminDoc.data();
 
-      // Check if request already exists
+      const currentCount = adminData.currentStudentCount || 0;
+      const maxStudents = adminData.maxStudents || 0;
+
+      if (maxStudents > 0 && currentCount >= maxStudents) {
+        throw new Error(
+          "This institute has reached its maximum student capacity. Registration is currently closed."
+        );
+      }
+
       const requestsRef = collection(db, "registrationRequests");
       const existingQuery = query(
         requestsRef,
@@ -65,7 +72,6 @@ export const submitRegistrationRequest = createAsyncThunk(
         };
       }
 
-      // Create new registration request
       const requestData = {
         name,
         email,
@@ -80,7 +86,6 @@ export const submitRegistrationRequest = createAsyncThunk(
 
       const requestDoc = await addDoc(requestsRef, requestData);
 
-      // Send notification email to admin
       const adminNotificationHTML = `
   <div style="font-family: Inter, Arial, sans-serif; background-color: #f8fafc; padding: 24px;">
     <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 16px; padding: 32px; box-shadow: 0px 8px 24px rgba(15, 23, 42, 0.1); border: 1px solid #e2e8f0;">
@@ -135,7 +140,6 @@ export const submitRegistrationRequest = createAsyncThunk(
   }
 );
 
-// Get all registration requests for an admin
 export const getRegistrationRequests = createAsyncThunk(
   "admin/getRegistrationRequests",
   async (adminId, { rejectWithValue }) => {
@@ -154,7 +158,6 @@ export const getRegistrationRequests = createAsyncThunk(
         });
       });
 
-      // Sort by most recent first
       requests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       return {
@@ -169,7 +172,6 @@ export const getRegistrationRequests = createAsyncThunk(
   }
 );
 
-// Approve registration request
 export const approveRegistrationRequest = createAsyncThunk(
   "admin/approveRegistrationRequest",
   async (requestId, { rejectWithValue }) => {
@@ -189,7 +191,6 @@ export const approveRegistrationRequest = createAsyncThunk(
         updatedAt: serverTimestamp(),
       });
 
-      // Send approval email to student
       const approvalHTML = `
   <div style="font-family: Inter, Arial, sans-serif; background-color: #f8fafc; padding: 24px;">
     <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 16px; padding: 32px; box-shadow: 0px 8px 24px rgba(15, 23, 42, 0.1); border: 1px solid #e2e8f0;">
@@ -242,7 +243,6 @@ export const approveRegistrationRequest = createAsyncThunk(
   }
 );
 
-// Reject registration request
 export const rejectRegistrationRequest = createAsyncThunk(
   "admin/rejectRegistrationRequest",
   async ({ requestId, reason }, { rejectWithValue }) => {
@@ -263,7 +263,6 @@ export const rejectRegistrationRequest = createAsyncThunk(
         updatedAt: serverTimestamp(),
       });
 
-      // Send rejection email to student
       const rejectionHTML = `
         <div style="font-family: Inter, Arial, sans-serif; background-color: #f8fafc; padding: 24px;">
           <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 16px; padding: 32px; box-shadow: 0px 8px 24px rgba(15, 23, 42, 0.1); border: 1px solid #e2e8f0;">
@@ -313,7 +312,6 @@ export const rejectRegistrationRequest = createAsyncThunk(
   }
 );
 
-// Modified verifyRegistrationCode to check approval status
 export const verifyRegistrationCode = createAsyncThunk(
   "admin/verifyRegistrationCode",
   async ({ code, email }, { rejectWithValue }) => {
@@ -333,7 +331,16 @@ export const verifyRegistrationCode = createAsyncThunk(
       const adminDoc = querySnapshot.docs[0];
       const adminData = adminDoc.data();
 
-      // Check if there's an approved request for this email
+      const currentCount = adminData.currentStudentCount || 0;
+      const maxStudents = adminData.maxStudents || 0;
+
+      if (maxStudents > 0 && currentCount >= maxStudents) {
+        throw new Error(
+          "This registration code has expired. The institute has reached its maximum student capacity."
+        );
+      }
+
+
       if (email) {
         const requestsRef = collection(db, "registrationRequests");
         const requestQuery = query(
@@ -397,7 +404,10 @@ export const verifyRegistrationCode = createAsyncThunk(
 
 export const createAdmin = createAsyncThunk(
   "admin/createAdmin",
-  async ({ name, email, phone, instituteName }, { rejectWithValue }) => {
+  async (
+    { name, email, phone, instituteName, maxStudents },
+    { rejectWithValue }
+  ) => {
     try {
       if (!name || !email) {
         throw new Error("Name and Email are required");
@@ -413,15 +423,13 @@ export const createAdmin = createAsyncThunk(
 
       const randomPassword = Math.random().toString(36).slice(-8);
       const registrationCode = generateRegistrationCode();
-      
-      
+
       const [userCredential] = await Promise.all([
         createUserWithEmailAndPassword(auth, email, randomPassword),
       ]);
-      
+
       const userId = userCredential.user.uid;
 
-      // Save to Firestore
       await setDoc(doc(db, "users", userId), {
         uid: userId,
         name,
@@ -432,6 +440,8 @@ export const createAdmin = createAsyncThunk(
         college: instituteName || name,
         instituteName: instituteName || name,
         registrationCode: registrationCode,
+        maxStudents: maxStudents || 0,
+        currentStudentCount: 0,
         createdBy: auth.currentUser?.uid || null,
         createdAt: serverTimestamp(),
       });
@@ -555,9 +565,8 @@ export const createAdmin = createAsyncThunk(
         to: email,
         subject: "Welcome to ChemT - Admin Access",
         html: adminWelcomeHTML,
-      })
+      });
 
-      
       return {
         success: true,
         message: "Admin created successfully! Welcome email is being sent.",
@@ -602,6 +611,8 @@ export const getAllAdmins = createAsyncThunk(
           instituteName: data.instituteName || data.college || data.name,
           registrationCode: data.registrationCode,
           temp_password: data.password,
+          maxStudents: data.maxStudents || 0,
+          currentStudentCount: data.currentStudentCount || 0,
           createdAt: data.createdAt?.toDate().toISOString(),
         });
       });
@@ -622,7 +633,7 @@ export const getAllAdmins = createAsyncThunk(
 export const updateAdmin = createAsyncThunk(
   "admin/updateAdmin",
   async (
-    { adminId, name, email, phone, instituteName },
+    { adminId, name, email, phone, instituteName, maxStudents },
     { rejectWithValue }
   ) => {
     try {
@@ -638,6 +649,10 @@ export const updateAdmin = createAsyncThunk(
       if (instituteName) {
         updates.instituteName = instituteName;
         updates.college = instituteName;
+      }
+
+      if (maxStudents !== undefined) {
+        updates.maxStudents = maxStudents;
       }
 
       await updateDoc(adminRef, updates);

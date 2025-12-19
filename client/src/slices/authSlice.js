@@ -19,6 +19,7 @@ import {
   query,
   where,
   deleteDoc,
+  increment,
 } from "firebase/firestore";
 
 import { auth, db } from "../config/firebase";
@@ -77,7 +78,14 @@ const createUserDocument = async (user, additionalData = {}) => {
 export const register = createAsyncThunk(
   "auth/register",
   async (
-    { name, email, password, role = "student", createdBy = null },
+    {
+      name,
+      email,
+      password,
+      role = "student",
+      createdBy = null,
+      registrationCode = null,
+    },
     { rejectWithValue }
   ) => {
     try {
@@ -99,10 +107,17 @@ export const register = createAsyncThunk(
       if (createdBy) {
         const adminDoc = await getDoc(doc(db, "users", createdBy));
         if (adminDoc.exists()) {
+          const adminData = adminDoc.data();
           instituteName =
-            adminDoc.data().name ||
-            adminDoc.data().college ||
-            "Unknown Institute";
+            adminData.name || adminData.college || "Unknown Institute";
+
+          const currentCount = adminData.currentStudentCount || 0;
+          const maxStudents = adminData.maxStudents || 0;
+
+          if (maxStudents > 0 && currentCount >= maxStudents) {
+            await user.delete();
+            throw new Error("Institute has reached maximum student capacity");
+          }
         }
       }
 
@@ -113,6 +128,13 @@ export const register = createAsyncThunk(
         instituteName,
       });
 
+      if (createdBy && role === "student") {
+        const adminRef = doc(db, "users", createdBy);
+        await updateDoc(adminRef, {
+          currentStudentCount: increment(1),
+        });
+      }
+
       return { user: userData, message: "User registered successfully" };
     } catch (error) {
       let message = "Registration failed";
@@ -121,6 +143,8 @@ export const register = createAsyncThunk(
       if (error.code === "auth/weak-password")
         message = "Password must be at least 6 characters";
       if (error.code === "auth/invalid-email") message = "Invalid email";
+      if (error.message === "Institute has reached maximum student capacity")
+        message = error.message;
 
       return rejectWithValue(message);
     }
@@ -170,7 +194,6 @@ export const login = createAsyncThunk(
   }
 );
 
-
 export const forgotPassword = createAsyncThunk(
   "auth/forgotPassword",
   async ({ email }, { rejectWithValue }) => {
@@ -194,7 +217,6 @@ export const forgotPassword = createAsyncThunk(
     }
   }
 );
-
 
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
@@ -424,7 +446,25 @@ export const deleteUser = createAsyncThunk(
         throw new Error("User not found");
       }
 
+      const userData = snap.data();
+      const createdBy = userData.createdBy;
+
       await deleteDoc(doc(db, "users", id));
+
+      // ADD THIS BLOCK - Decrement admin's student count when deleting a student
+      if (createdBy) {
+        const adminRef = doc(db, "users", createdBy);
+        const adminSnap = await getDoc(adminRef);
+
+        if (adminSnap.exists()) {
+          const currentCount = adminSnap.data().currentStudentCount || 0;
+          if (currentCount > 0) {
+            await updateDoc(adminRef, {
+              currentStudentCount: increment(-1),
+            });
+          }
+        }
+      }
 
       return { userId: id };
     } catch (err) {
@@ -432,7 +472,6 @@ export const deleteUser = createAsyncThunk(
     }
   }
 );
-
 const authSlice = createSlice({
   name: "auth",
   initialState: {

@@ -5,7 +5,7 @@ import TestNav from "./TestNav";
 import { useNavigate } from "react-router-dom";
 import Calculator from "./Calculator";
 import toast from "react-hot-toast";
-import { AlertOctagon, CheckCircle2, AlertTriangle } from "lucide-react";
+import { AlertOctagon, CheckCircle2, AlertTriangle, FileText } from "lucide-react";
 
 const TestInterface = () => {
   const {
@@ -37,6 +37,7 @@ const TestInterface = () => {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showPdfSidebar, setShowPdfSidebar] = useState(false);
 
   const hasInitialized = useRef(false);
   const isChangingQuestion = useRef(false);
@@ -91,7 +92,6 @@ const TestInterface = () => {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
- 
   useEffect(() => {
     if (testId && !hasInitialized.current) {
       hasInitialized.current = true;
@@ -218,45 +218,69 @@ const TestInterface = () => {
 
   const handleSubmitTest = useCallback(() => {
     if (markedQuestions.size > 0) {
-      toast.custom(
+      toast(
         (t) => (
-          <div
-            className={`${
-              t.visible ? "animate-enter" : "animate-leave"
-            } max-w-md w-full bg-[#0f172a] border border-purple-500/50 shadow-2xl shadow-purple-900/20 pointer-events-auto flex rounded-xl ring-1 ring-black ring-opacity-5`}
-          >
-            <div className="flex-1 w-0 p-4">
-              <div className="flex items-start">
-                <div className="shrink-0 pt-0.5">
-                  <AlertOctagon className="h-10 w-10 text-purple-500" />
-                </div>
-                <div className="ml-3 flex-1">
-                  <p className="text-sm font-bold text-purple-400">
-                    Cannot Submit Test
-                  </p>
-                  <p className="mt-1 text-sm text-slate-300">
-                    You have{" "}
-                    <span className="text-white font-bold">
-                      {markedQuestions.size}
-                    </span>{" "}
-                    question(s) marked for review.
-                  </p>
-                  <p className="mt-2 text-xs text-slate-500">
-                    Please unmark them before submitting.
-                  </p>
-                </div>
+          <div className="flex flex-col gap-3 p-2">
+            <div className="flex items-start gap-3">
+              <div className="shrink-0">
+                <AlertOctagon className="h-8 w-8 text-purple-500" />
               </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-purple-400">
+                  Cannot Submit Test
+                </p>
+                <p className="mt-1 text-sm text-slate-300">
+                  You have{" "}
+                  <span className="text-white font-bold">
+                    {markedQuestions.size}
+                  </span>{" "}
+                  question(s) marked for review.
+                </p>
+                <p className="mt-2 text-xs text-slate-400">
+                  Please unmark them before submitting.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2 border-t border-slate-700">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toast.dismiss(t.id);
+                  setShowSubmitModal(true);
+                }}
+                className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Submit Anyway
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toast.dismiss(t.id);
+                }}
+                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-medium rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         ),
-        { duration: 3000 }
+        {
+          duration: Infinity,
+          style: {
+            background: "#0f172a",
+            border: "1px solid rgba(168, 85, 247, 0.5)",
+            boxShadow: "0 25px 50px -12px rgba(147, 51, 234, 0.2)",
+            maxWidth: "500px",
+            padding: "16px",
+          },
+        }
       );
       return;
     }
 
     setShowSubmitModal(true);
-  }, [markedQuestions]);
-
+  }, [markedQuestions, setShowSubmitModal]);
   const handleConfirmSubmit = async () => {
     setIsSubmitting(true);
     try {
@@ -335,6 +359,8 @@ const TestInterface = () => {
         isSubmitting={isSubmitting}
         currentTest={{ totalQuestions, timeLimit }}
         timeLeft={timeLeft}
+        showPdfSidebar={showPdfSidebar}
+        setShowPdfSidebar={setShowPdfSidebar}
       />
 
       {fullScreenWarning && (
@@ -356,7 +382,6 @@ const TestInterface = () => {
       {showSubmitModal && (
         <div className="fixed inset-0 z-9999 flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm">
           <div className="w-full max-w-md bg-[#020617] border border-slate-800 rounded-2xl shadow-2xl shadow-cyan-500/10 overflow-hidden transform transition-all scale-100">
-    
             <div className="bg-slate-900/50 p-6 border-b border-slate-800 flex items-center gap-4">
               <div className="h-12 w-12 rounded-full bg-cyan-500/10 flex items-center justify-center shrink-0">
                 <CheckCircle2 className="h-6 w-6 text-cyan-400" />
@@ -631,6 +656,95 @@ const TestInterface = () => {
           </div>
         </aside>
       </main>
+
+      <div className={`pdf-sidebar ${showPdfSidebar ? "open" : ""}`}>
+        <div className="pdf-sidebar-header">
+          <div className="pdf-header-content">
+            <FileText size={20} />
+            <h3>Questions Preview</h3>
+          </div>
+          <button
+            className="pdf-close-btn"
+            onClick={() => setShowPdfSidebar(false)}
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="pdf-sidebar-content">
+          {questions && questions.length > 0 ? (
+            questions.map((question, idx) => (
+              <div
+                key={idx}
+                className={`pdf-question-card ${
+                  idx === currentIndex ? "current" : ""
+                }`}
+                onClick={() => {
+                  goToQuestion(idx);
+                  setShowPdfSidebar(false);
+                }}
+              >
+                <div className="pdf-question-header">
+                  <span className="pdf-question-number">Q{idx + 1}</span>
+                  <div className="pdf-question-badges">
+                    {answeredQuestions.has(idx) && (
+                      <span className="badge badge-answered">✓</span>
+                    )}
+                    {markedQuestions.has(idx) && (
+                      <span className="badge badge-marked">⚑</span>
+                    )}
+                  </div>
+                </div>
+
+                <p className="pdf-question-text">{question.questionText}</p>
+
+                {question.images && question.images.length > 0 && (
+                  <div className="pdf-question-images">
+                    {question.images.map((img, imgIdx) => (
+                      <img
+                        key={imgIdx}
+                        src={img}
+                        alt={`Q${idx + 1} diagram`}
+                        className="pdf-question-img"
+                      />
+                    ))}
+                  </div>
+                )}
+
+                <div className="pdf-options-list">
+                  {question.options &&
+                    question.options.map((option, optIdx) => (
+                      <div
+                        key={optIdx}
+                        className={`pdf-option ${
+                          answers[idx]?.selectedAnswer === option
+                            ? "selected"
+                            : ""
+                        }`}
+                      >
+                        <span className="pdf-option-label">
+                          {String.fromCharCode(65 + optIdx)}
+                        </span>
+                        <span className="pdf-option-text">{option}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="pdf-empty">
+              <p>No questions available</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {showPdfSidebar && (
+        <div
+          className="pdf-backdrop"
+          onClick={() => setShowPdfSidebar(false)}
+        />
+      )}
     </div>
   );
 };

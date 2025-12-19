@@ -458,20 +458,20 @@ const ManageUsers = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-4xl bg-[#0f172a] border border-white/10 rounded-2xl shadow-2xl shadow-emerald-900/30 overflow-hidden max-h-[90vh] overflow-y-auto"
+              className="relative w-full max-w-4xl max-h-[90vh] bg-[#0f172a] border border-white/10 rounded-2xl shadow-2xl shadow-emerald-900/30 overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="sticky top-0 z-10 px-6 py-4 border-b border-white/10 bg-linear-to-r from-emerald-500/10 to-cyan-500/10 backdrop-blur-sm">
+              <div className="px-6 py-4 border-b border-white/10 bg-linear-to-r from-emerald-500/10 to-cyan-500/10">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-full bg-linear-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center text-black font-bold text-xl shadow-lg">
+                    <div className="w-12 h-12 rounded-full bg-linear-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center text-black font-bold text-lg shadow-lg">
                       {detailUser.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-white">
+                      <h2 className="text-xl font-bold text-white">
                         {detailUser.name}
                       </h2>
-                      <span className="inline-block mt-1 px-2.5 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-xs text-emerald-400 font-medium">
+                      <span className="inline-block mt-0.5 px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-[10px] text-emerald-400 font-medium">
                         Student
                       </span>
                     </div>
@@ -485,18 +485,18 @@ const ManageUsers = () => {
                 </div>
               </div>
 
-              <div className="p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-             
-                  <div className="space-y-6">
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          
+                  <div className="space-y-5">
                     <div>
-                      <h3 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Building2 size={14} />
+                      <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <Building2 size={12} />
                         {detailUser.createdBy
                           ? "Institute Information"
                           : "Registration Type"}
                       </h3>
-                      <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:border-emerald-500/30 transition-colors">
+                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
                         {detailUser.createdBy ? (
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -508,7 +508,7 @@ const ManageUsers = () => {
                                 <p className="text-xs text-slate-400">
                                   Registered Through
                                 </p>
-                                <p className="text-white font-semibold">
+                                <p className="text-white font-semibold text-sm">
                                   {detailUser.adminDetails?.instituteName ||
                                     detailUser.instituteName ||
                                     "Unknown Institute"}
@@ -516,7 +516,7 @@ const ManageUsers = () => {
                               </div>
                             </div>
                             {detailUser.adminDetails?.name && (
-                              <div className="mt-3 pt-3 border-t border-white/10">
+                              <div className="mt-2 pt-2 border-t border-white/10">
                                 <p className="text-xs text-slate-400 mb-1">
                                   Admin Details
                                 </p>
@@ -534,14 +534,14 @@ const ManageUsers = () => {
                         ) : (
                           <div className="flex items-center gap-3">
                             <UserCheck
-                              size={20}
+                              size={18}
                               className="text-emerald-400 shrink-0"
                             />
                             <div>
                               <p className="text-xs text-slate-400">
                                 Direct Registration
                               </p>
-                              <p className="text-white font-semibold">
+                              <p className="text-white font-semibold text-sm">
                                 Self-registered user
                               </p>
                             </div>
@@ -551,38 +551,38 @@ const ManageUsers = () => {
                     </div>
 
                     <div>
-                      <h3 className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Mail size={14} />
+                      <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <Mail size={12} />
                         Contact Information
                       </h3>
-                      <div className="space-y-3">
-                        <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:border-cyan-500/30 transition-colors">
-                          <div className="flex items-start gap-3">
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                          <div className="flex items-start gap-2">
                             <Mail
-                              size={18}
+                              size={16}
                               className="text-cyan-400 mt-0.5 shrink-0"
                             />
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs text-slate-400 mb-1">
+                              <p className="text-xs text-slate-400 mb-0.5">
                                 Email Address
                               </p>
-                              <p className="text-white font-medium break-all">
+                              <p className="text-white font-medium text-sm break-all">
                                 {detailUser.email}
                               </p>
                             </div>
                           </div>
                         </div>
-                        <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:border-cyan-500/30 transition-colors">
-                          <div className="flex items-start gap-3">
+                        <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                          <div className="flex items-start gap-2">
                             <Phone
-                              size={18}
+                              size={16}
                               className="text-cyan-400 mt-0.5 shrink-0"
                             />
                             <div className="flex-1">
-                              <p className="text-xs text-slate-400 mb-1">
+                              <p className="text-xs text-slate-400 mb-0.5">
                                 Phone Number
                               </p>
-                              <p className="text-white font-medium">
+                              <p className="text-white font-medium text-sm">
                                 {detailUser.phone || (
                                   <span className="text-slate-500 italic">
                                     Not provided
@@ -596,21 +596,21 @@ const ManageUsers = () => {
                     </div>
 
                     <div>
-                      <h3 className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Calendar size={14} />
+                      <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <Calendar size={12} />
                         Account Information
                       </h3>
-                      <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:border-purple-500/30 transition-colors">
-                        <div className="flex items-center gap-3">
+                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                        <div className="flex items-center gap-2">
                           <Calendar
-                            size={18}
+                            size={16}
                             className="text-purple-400 shrink-0"
                           />
                           <div className="flex-1">
-                            <p className="text-xs text-slate-400 mb-1">
+                            <p className="text-xs text-slate-400 mb-0.5">
                               Account Created
                             </p>
-                            <p className="text-white font-semibold">
+                            <p className="text-white font-semibold text-sm">
                               {formatDate(detailUser.createdAt)}
                             </p>
                           </div>
@@ -619,180 +619,176 @@ const ManageUsers = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <CreditCard size={14} />
-                        Subscription Details
-                      </h3>
-                      <div className="space-y-3">
-                        {(() => {
-                          const activeSub =
-                            getUserActiveSubscription(detailUser);
-                          const planDetails = getUserPlanDetails(detailUser);
-                          const timeRemaining = activeSub
-                            ? getTimeRemaining(activeSub)
-                            : null;
-                          const formattedTime = activeSub
-                            ? formatTimeRemaining(activeSub)
-                            : null;
+                  <div>
+                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                      <CreditCard size={12} />
+                      Subscription Details
+                    </h3>
+                    <div className="space-y-3">
+                      {(() => {
+                        const activeSub = getUserActiveSubscription(detailUser);
+                        const planDetails = getUserPlanDetails(detailUser);
+                        const timeRemaining = activeSub
+                          ? getTimeRemaining(activeSub)
+                          : null;
+                        const formattedTime = activeSub
+                          ? formatTimeRemaining(activeSub)
+                          : null;
 
-                          return (
-                            <>
-                              <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:border-amber-500/30 transition-colors">
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="flex items-start gap-3 flex-1">
-                                    <CreditCard
-                                      size={18}
-                                      className="text-amber-400 mt-0.5 shrink-0"
-                                    />
-                                    <div className="flex-1">
-                                      <p className="text-xs text-slate-400 mb-1">
-                                        Current Plan
-                                      </p>
-                                      <p className="text-white text-lg font-bold">
-                                        {planDetails.name}
-                                      </p>
-                                      <p className="text-slate-400 text-sm mt-0.5">
-                                        ₹{planDetails.price}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div>
-                                    {planDetails.isActive ? (
-                                      <span
-                                        className={`px-3 py-1.5 text-xs font-semibold rounded-full ${
-                                          timeRemaining?.isExpiringToday
-                                            ? "bg-red-500/20 text-red-300 border border-red-500/30"
-                                            : timeRemaining?.isExpiringSoon
-                                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                                            : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                                        }`}
-                                      >
-                                        Active
-                                      </span>
-                                    ) : (
-                                      <span className="px-3 py-1.5 text-xs font-semibold bg-rose-500/20 text-rose-300 rounded-full border border-rose-500/30">
-                                        Inactive
-                                      </span>
-                                    )}
+                        return (
+                          <>
+                            <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-start gap-3 flex-1">
+                                  <CreditCard
+                                    size={18}
+                                    className="text-amber-400 mt-0.5 shrink-0"
+                                  />
+                                  <div className="flex-1">
+                                    <p className="text-xs text-slate-400 mb-1">
+                                      Current Plan
+                                    </p>
+                                    <p className="text-white text-lg font-bold">
+                                      {planDetails.name}
+                                    </p>
+                                    <p className="text-slate-400 text-sm mt-0.5">
+                                      ₹{planDetails.price}
+                                    </p>
                                   </div>
                                 </div>
+                                <div>
+                                  {planDetails.isActive ? (
+                                    <span
+                                      className={`px-2.5 py-1 text-[10px] font-semibold rounded-full ${
+                                        timeRemaining?.isExpiringToday
+                                          ? "bg-red-500/20 text-red-300 border border-red-500/30"
+                                          : timeRemaining?.isExpiringSoon
+                                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                                          : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                      }`}
+                                    >
+                                      Active
+                                    </span>
+                                  ) : (
+                                    <span className="px-2.5 py-1 text-[10px] font-semibold bg-rose-500/20 text-rose-300 rounded-full border border-rose-500/30">
+                                      Inactive
+                                    </span>
+                                  )}
+                                </div>
                               </div>
+                            </div>
 
-                              {activeSub && timeRemaining?.isExpiringSoon && (
-                                <div
-                                  className={`p-4 rounded-xl border ${
-                                    timeRemaining.isExpiringToday
-                                      ? "bg-red-500/10 border-red-500/30"
-                                      : "bg-amber-500/10 border-amber-500/30"
-                                  }`}
-                                >
-                                  <div className="flex items-start gap-3">
-                                    <AlertCircle
-                                      size={18}
-                                      className={`mt-0.5 shrink-0 ${
+                            {activeSub && timeRemaining?.isExpiringSoon && (
+                              <div
+                                className={`p-3 rounded-xl border ${
+                                  timeRemaining.isExpiringToday
+                                    ? "bg-red-500/10 border-red-500/30"
+                                    : "bg-amber-500/10 border-amber-500/30"
+                                }`}
+                              >
+                                <div className="flex items-start gap-2">
+                                  <AlertCircle
+                                    size={16}
+                                    className={`mt-0.5 shrink-0 ${
+                                      timeRemaining.isExpiringToday
+                                        ? "text-red-400"
+                                        : "text-amber-400"
+                                    }`}
+                                  />
+                                  <div className="flex-1">
+                                    <p
+                                      className={`text-sm font-bold mb-0.5 ${
                                         timeRemaining.isExpiringToday
                                           ? "text-red-400"
                                           : "text-amber-400"
                                       }`}
-                                    />
-                                    <div className="flex-1">
-                                      <p
-                                        className={`text-sm font-bold mb-1 ${
-                                          timeRemaining.isExpiringToday
-                                            ? "text-red-400"
-                                            : "text-amber-400"
-                                        }`}
-                                      >
-                                        {timeRemaining.isExpiringToday
-                                          ? "Expiring Today!"
-                                          : "Expiring Soon"}
-                                      </p>
-                                      <p className="text-xs text-slate-400">
-                                        {timeRemaining.isExpiringToday
-                                          ? "Subscription expires today. Renewal recommended."
-                                          : "Subscription will expire within 7 days."}
-                                      </p>
-                                    </div>
+                                    >
+                                      {timeRemaining.isExpiringToday
+                                        ? "Expiring Today!"
+                                        : "Expiring Soon"}
+                                    </p>
+                                    <p className="text-xs text-slate-400">
+                                      {timeRemaining.isExpiringToday
+                                        ? "Subscription expires today. Renewal recommended."
+                                        : "Subscription will expire within 7 days."}
+                                    </p>
                                   </div>
                                 </div>
-                              )}
+                              </div>
+                            )}
 
-                              {activeSub && (
-                                <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:border-slate-500/30 transition-colors">
-                                  <div className="flex items-start gap-3">
-                                    <Calendar
-                                      size={18}
-                                      className="text-slate-400 mt-0.5 shrink-0"
-                                    />
-                                    <div className="flex-1">
-                                      <p className="text-xs text-slate-400 mb-1">
-                                        Subscription Expires
-                                      </p>
-                                      <p className="text-white font-semibold">
-                                        {activeSub.endDate
-                                          ? new Date(
-                                              activeSub.endDate.seconds
-                                                ? activeSub.endDate.seconds *
-                                                  1000
-                                                : activeSub.endDate
-                                            ).toLocaleString("en-US", {
-                                              month: "short",
-                                              day: "numeric",
-                                              year: "numeric",
-                                              hour: "2-digit",
-                                              minute: "2-digit",
-                                            })
-                                          : "N/A"}
-                                      </p>
-                                      {timeRemaining && (
-                                        <div className="mt-2 flex items-center gap-2">
-                                          <Clock
-                                            size={14}
-                                            className="text-slate-500"
-                                          />
-                                          <p className="text-xs text-slate-500 font-medium">
-                                            {formattedTime} remaining
-                                          </p>
-                                        </div>
-                                      )}
-                                    </div>
+                            {activeSub && (
+                              <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                                <div className="flex items-start gap-2">
+                                  <Calendar
+                                    size={16}
+                                    className="text-slate-400 mt-0.5 shrink-0"
+                                  />
+                                  <div className="flex-1">
+                                    <p className="text-xs text-slate-400 mb-1">
+                                      Subscription Expires
+                                    </p>
+                                    <p className="text-white font-semibold text-sm">
+                                      {activeSub.endDate
+                                        ? new Date(
+                                            activeSub.endDate.seconds
+                                              ? activeSub.endDate.seconds * 1000
+                                              : activeSub.endDate
+                                          ).toLocaleString("en-US", {
+                                            month: "short",
+                                            day: "numeric",
+                                            year: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })
+                                        : "N/A"}
+                                    </p>
+                                    {timeRemaining && (
+                                      <div className="mt-2 flex items-center gap-1.5">
+                                        <Clock
+                                          size={12}
+                                          className="text-slate-500"
+                                        />
+                                        <p className="text-xs text-slate-500 font-medium">
+                                          {formattedTime} remaining
+                                        </p>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
-                              )}
+                              </div>
+                            )}
 
-                              {!activeSub && (
-                                <div className="p-4 bg-slate-500/10 rounded-xl border border-slate-500/30">
-                                  <div className="flex items-center gap-3">
-                                    <AlertCircle
-                                      size={18}
-                                      className="text-slate-400 shrink-0"
-                                    />
-                                    <div>
-                                      <p className="text-sm font-semibold text-slate-300">
-                                        No Active Subscription
-                                      </p>
-                                      <p className="text-xs text-slate-500 mt-0.5">
-                                        User is on the Free plan
-                                      </p>
-                                    </div>
+                            {!activeSub && (
+                              <div className="p-3 bg-slate-500/10 rounded-xl border border-slate-500/30">
+                                <div className="flex items-center gap-2">
+                                  <AlertCircle
+                                    size={16}
+                                    className="text-slate-400 shrink-0"
+                                  />
+                                  <div>
+                                    <p className="text-sm font-semibold text-slate-300">
+                                      No Active Subscription
+                                    </p>
+                                    <p className="text-xs text-slate-500 mt-0.5">
+                                      User is on the Free plan
+                                    </p>
                                   </div>
                                 </div>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </div>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="sticky bottom-0 px-6 py-4 border-t border-white/10 bg-[#0f172a]/95 backdrop-blur-sm flex justify-end gap-3">
+              <div className="px-6 py-3 border-t border-white/10 bg-[#0f172a]/95 backdrop-blur-sm flex justify-end">
                 <button
                   onClick={closeDetailModal}
-                  className="px-5 py-2.5 border border-white/10 rounded-lg text-slate-300 hover:bg-white/5 hover:text-white transition-all font-medium text-sm"
+                  className="px-4 py-2 border border-white/10 rounded-lg text-slate-300 hover:bg-white/5 hover:text-white transition-all font-medium text-sm"
                 >
                   Close
                 </button>

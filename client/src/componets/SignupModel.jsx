@@ -2,32 +2,45 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { register, clearError, clearMessage } from "../slices/authSlice";
-import { verifyRegistrationCode, submitRegistrationRequest, clearVerifiedAdmin } from "../slices/adminSlice";
-import { X, Building2, CheckCircle2, Clock, AlertCircle, User } from "lucide-react";
+import {
+  verifyRegistrationCode,
+  submitRegistrationRequest,
+  clearVerifiedAdmin,
+} from "../slices/adminSlice";
+import {
+  X,
+  Building2,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  User,
+} from "lucide-react";
 
 const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
   const dispatch = useDispatch();
   const urlParams = new URLSearchParams(window.location.search);
-  const urlCode = urlParams.get('code');
-  const urlEmail = urlParams.get('email');
-  const urlName = urlParams.get('name');
+  const urlCode = urlParams.get("code");
+  const urlEmail = urlParams.get("email");
+  const urlName = urlParams.get("name");
 
   const [signupMode, setSignupMode] = useState(urlCode ? "institute" : null);
-  
+
   const [formData, setFormData] = useState({
     name: urlName || "",
     email: urlEmail || "",
     password: "",
     registrationCode: urlCode || "",
   });
-  
+
   const [verifyingCode, setVerifyingCode] = useState(false);
   const [verificationStep, setVerificationStep] = useState("code");
-  
+
   const { loading, error, message, isAuthenticated } = useSelector(
     (state) => state.auth
   );
-  const { verifiedAdmin, verificationStatus } = useSelector((state) => state.admin);
+  const { verifiedAdmin, verificationStatus } = useSelector(
+    (state) => state.admin
+  );
 
   useEffect(() => {
     if (urlCode && urlEmail && !verifiedAdmin) {
@@ -43,15 +56,17 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
     setVerifyingCode(true);
     try {
       const verifyResult = await dispatch(
-        verifyRegistrationCode({ 
-          code: code, 
-          email: email 
+        verifyRegistrationCode({
+          code: code,
+          email: email,
         })
       ).unwrap();
-      
+
       if (verifyResult.status === "approved") {
         setVerificationStep("approved");
-        toast.success("Institute verified! Create your password to complete registration.");
+        toast.success(
+          "Institute verified! Create your password to complete registration."
+        );
       } else if (verifyResult.status === "pending") {
         setVerificationStep("pending");
         toast.error("Your request is still pending approval.");
@@ -79,7 +94,10 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
 
   useEffect(() => {
     if (error) {
-      const errorMessage = typeof error === 'string' ? error : error?.message || "An error occurred";
+      const errorMessage =
+        typeof error === "string"
+          ? error
+          : error?.message || "An error occurred";
       toast.error(errorMessage);
       dispatch(clearError());
     }
@@ -93,32 +111,33 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleDirectSignup = async () => {
-    if (!formData.name || !formData.email || !formData.password) {
-      toast.error("Please fill in all fields");
-      return;
-    }
+  if (!formData.name || !formData.email || !formData.password) {
+    toast.error("Please fill in all fields");
+    return;
+  }
 
-    if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
+  if (formData.password.length < 6) {
+    toast.error("Password must be at least 6 characters");
+    return;
+  }
 
-    try {
-      const registerData = {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        role: "student",
-        createdBy: null, 
-      };
-      
-      await dispatch(register(registerData)).unwrap();
-      toast.success("Account created! You can now login and access demo tests.");
-    } catch (error) {
-      const errorMessage = typeof error === 'string' ? error : error?.message || "Registration failed";
-      toast.error(errorMessage);
-    }
-  };
+  try {
+    const registerData = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      role: "student",
+      createdBy: null,
+      registrationCode: null,
+    };
+    
+    await dispatch(register(registerData)).unwrap();
+    toast.success("Account created! You can now login and access demo tests.");
+  } catch (error) {
+    const errorMessage = typeof error === 'string' ? error : error?.message || "Registration failed";
+    toast.error(errorMessage);
+  }
+};
 
   const handleSubmitRequest = async () => {
     const codeToVerify = formData.registrationCode;
@@ -134,15 +153,17 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
     setVerifyingCode(true);
     try {
       const verifyResult = await dispatch(
-        verifyRegistrationCode({ 
-          code: codeToVerify, 
-          email: formData.email 
+        verifyRegistrationCode({
+          code: codeToVerify,
+          email: formData.email,
         })
       ).unwrap();
 
       if (verifyResult.status === "approved") {
         setVerificationStep("approved");
-        toast.success("Institute verified! Create your password to complete registration.");
+        toast.success(
+          "Institute verified! Create your password to complete registration."
+        );
       } else if (verifyResult.status === "pending") {
         setVerificationStep("pending");
         toast.error("Your request is pending. Please wait for admin approval.");
@@ -157,14 +178,21 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
 
         if (submitResult.status === "pending") {
           setVerificationStep("pending");
-          toast.success("Registration request submitted! Check your email once approved.");
+          toast.success(
+            "Registration request submitted! Check your email once approved."
+          );
         } else if (submitResult.status === "approved") {
           setVerificationStep("approved");
-          toast.success("Institute verified! Create your password to complete registration.");
+          toast.success(
+            "Institute verified! Create your password to complete registration."
+          );
         }
       }
     } catch (err) {
-      const errorMessage = typeof err === 'string' ? err : err?.message || "Invalid registration code";
+      const errorMessage =
+        typeof err === "string"
+          ? err
+          : err?.message || "Invalid registration code";
       toast.error(errorMessage);
       dispatch(clearVerifiedAdmin());
       setVerificationStep("code");
@@ -191,12 +219,16 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
         createdBy: verifiedAdmin.id,
         registrationCode: formData.registrationCode,
       };
-      
+
       await dispatch(register(registerData)).unwrap();
       toast.success("Account created! You can now login.");
       dispatch(clearVerifiedAdmin());
     } catch (error) {
-      const errorMessage = typeof error === 'string' ? error : error?.message || "Registration failed";
+      console.log("error in signup model ", error)
+      const errorMessage =
+        typeof error === "string"
+          ? error
+          : error?.message || "Registration failed";
       toast.error(errorMessage);
       console.log("signup error", error);
     }
@@ -330,7 +362,10 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
             <div className="space-y-4">
               <div className="p-3 bg-[#10b981]/10 border border-[#10b981]/30 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <CheckCircle2 className="text-[#10b981] mt-0.5 shrink-0" size={18} />
+                  <CheckCircle2
+                    className="text-[#10b981] mt-0.5 shrink-0"
+                    size={18}
+                  />
                   <div>
                     <p className="text-white font-medium text-xs mb-0.5">
                       Instant Access
@@ -389,7 +424,12 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
 
               <button
                 onClick={handleDirectSignup}
-                disabled={loading || !formData.name || !formData.email || !formData.password}
+                disabled={
+                  loading ||
+                  !formData.name ||
+                  !formData.email ||
+                  !formData.password
+                }
                 className="w-full bg-[#10b981] hover:bg-[#059669] text-white py-3 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Creating Account..." : "Create Account"}
@@ -461,11 +501,13 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                 <span className="text-white font-semibold text-lg">ChemT</span>
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                {verificationStep === "approved" ? "Complete Registration" : "Request Access"}
+                {verificationStep === "approved"
+                  ? "Complete Registration"
+                  : "Request Access"}
               </h2>
               <p className="text-gray-400 text-sm">
-                {verificationStep === "approved" 
-                  ? "Create your password to complete registration" 
+                {verificationStep === "approved"
+                  ? "Create your password to complete registration"
                   : "Submit request for institute approval"}
               </p>
             </div>
@@ -474,7 +516,10 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
               <div className="space-y-5">
                 <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="text-blue-400 mt-0.5 shrink-0" size={18} />
+                    <AlertCircle
+                      className="text-blue-400 mt-0.5 shrink-0"
+                      size={18}
+                    />
                     <div>
                       <p className="text-white font-medium text-xs mb-0.5">
                         Institute Verification Required
@@ -540,7 +585,12 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                   <button
                     type="button"
                     onClick={handleSubmitRequest}
-                    disabled={verifyingCode || !formData.registrationCode || !formData.name || !formData.email}
+                    disabled={
+                      verifyingCode ||
+                      !formData.registrationCode ||
+                      !formData.name ||
+                      !formData.email
+                    }
                     className="w-full bg-[#10b981] hover:bg-[#059669] text-white py-3 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {verifyingCode ? "Submitting..." : "Submit Request"}
@@ -591,7 +641,10 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
               <div className="space-y-5">
                 <div className="p-3 bg-[#10b981]/10 border border-[#10b981]/30 rounded-lg">
                   <div className="flex items-start gap-2">
-                    <CheckCircle2 className="text-[#10b981] mt-0.5 shrink-0" size={18} />
+                    <CheckCircle2
+                      className="text-[#10b981] mt-0.5 shrink-0"
+                      size={18}
+                    />
                     <div className="flex-1">
                       <p className="text-white font-medium text-xs mb-0.5">
                         ✓ Request Approved

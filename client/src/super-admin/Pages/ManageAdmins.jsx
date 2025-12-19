@@ -42,11 +42,14 @@ const ManageAdmins = () => {
     email: "",
     phone: "",
     instituteName: "",
+    maxStudents: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [detailAdmin, setDetailAdmin] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+
+  console.log("details admin ", detailAdmin);
 
   useEffect(() => {
     fetchAdmins();
@@ -103,6 +106,7 @@ const ManageAdmins = () => {
       email: admin.email,
       phone: admin.phone || "",
       instituteName: admin.instituteName || "",
+      maxStudents: admin.maxStudents || "",
     });
     setIsModalOpen(true);
   };
@@ -121,7 +125,13 @@ const ManageAdmins = () => {
   const openCreateModal = () => {
     setIsEditing(false);
     setSelectedAdmin(null);
-    setFormData({ name: "", email: "", phone: "", instituteName: "" });
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      instituteName: "",
+      maxStudents: "",
+    });
     setIsModalOpen(true);
   };
 
@@ -129,7 +139,13 @@ const ManageAdmins = () => {
     setIsModalOpen(false);
     setIsEditing(false);
     setSelectedAdmin(null);
-    setFormData({ name: "", email: "", phone: "", instituteName: "" });
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      instituteName: "",
+      maxStudents: "",
+    });
   };
 
   const handleRowClick = (admin) => {
@@ -194,6 +210,22 @@ const ManageAdmins = () => {
             >
               <Copy size={12} className="text-emerald-500" />
             </button>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "studentLimit",
+      header: "Student Limit",
+      render: (a) => (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-400">
+            {a.currentStudentCount || 0} / {a.maxStudents || 0}
+          </span>
+          {a.currentStudentCount >= a.maxStudents && a.maxStudents > 0 && (
+            <span className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-[10px] text-rose-400">
+              FULL
+            </span>
           )}
         </div>
       ),
@@ -356,7 +388,7 @@ const ManageAdmins = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
                         <User size={14} className="text-emerald-500" /> Full
@@ -434,10 +466,30 @@ const ManageAdmins = () => {
                         }}
                         maxLength={20}
                         className="w-full px-4 py-2.5 bg-black/40 border border-white/10 rounded-lg focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 text-white placeholder-slate-600 transition-all"
-                        placeholder="+1 (555) 000-0000"
+                        placeholder="+91 1234567890"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5 md:col-span-2">
+                      <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                        <User size={14} className="text-emerald-500" /> Maximum
+                        Students
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formData.maxStudents}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            maxStudents: parseInt(e.target.value) || 0,
+                          })
+                        }
+                        className="w-full px-4 py-2.5 bg-black/40 border border-white/10 rounded-lg focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 text-white placeholder-slate-600 transition-all"
+                        placeholder="e.g. 100"
                       />
                       <p className="text-xs text-slate-400 mt-1">
-                        Format: +91 1234567890
+                        Maximum number of students this admin can register
                       </p>
                     </div>
                   </div>
@@ -488,7 +540,7 @@ const ManageAdmins = () => {
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="relative w-full max-w-4xl bg-[#0f172a] border border-white/10 rounded-2xl shadow-2xl shadow-emerald-900/50 overflow-hidden"
+                className="relative w-full max-w-4xl max-h-[90vh] bg-[#0f172a] border border-white/10 rounded-2xl shadow-2xl shadow-emerald-900/50 overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="px-6 py-5 border-b border-white/10 bg-linear-to-r from-emerald-500/10 to-cyan-500/10">
@@ -523,10 +575,10 @@ const ManageAdmins = () => {
                   </div>
                 </div>
 
-                <div className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-6 max-h-[calc(90vh-180px)] overflow-y-auto">
+                  <div className="space-y-6">
                     {detailAdmin.registrationCode && (
-                      <div className="col-span-1 md:col-span-2">
+                      <div>
                         <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                           Student Registration Onboarding
                         </h3>
@@ -592,120 +644,169 @@ const ManageAdmins = () => {
                       </div>
                     )}
 
-                    <div className="space-y-6">
-                      {detailAdmin.instituteName && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                      <div className="space-y-6">
+   
+                        {detailAdmin.instituteName && (
+                          <div>
+                            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                              Institute Details
+                            </h3>
+                            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                              <Building2
+                                size={18}
+                                className="text-cyan-400 shrink-0"
+                              />
+                              <div>
+                                <p className="text-xs text-slate-400">
+                                  Institute Name
+                                </p>
+                                <p className="text-white text-sm font-medium">
+                                  {detailAdmin.instituteName}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         <div>
                           <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                            Institute Details
+                            Student Management
                           </h3>
                           <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                            <Building2
+                            <User
                               size={18}
                               className="text-cyan-400 shrink-0"
                             />
-                            <div>
+                            <div className="flex-1">
                               <p className="text-xs text-slate-400">
-                                Institute Name
+                                Student Capacity
                               </p>
-                              <p className="text-white text-sm font-medium">
-                                {detailAdmin.instituteName}
-                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <p className="text-white text-sm font-medium">
+                                  {detailAdmin.currentStudentCount || 0} /{" "}
+                                  {detailAdmin.maxStudents || 0} students
+                                </p>
+                                {detailAdmin.currentStudentCount >=
+                                  detailAdmin.maxStudents &&
+                                  detailAdmin.maxStudents > 0 && (
+                                    <span className="px-2 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded-full text-[10px] text-rose-400">
+                                      CAPACITY REACHED
+                                    </span>
+                                  )}
+                              </div>
+                              {detailAdmin.maxStudents > 0 && (
+                                <div className="w-full bg-white/5 rounded-full h-1.5 mt-2">
+                                  <div
+                                    className="bg-linear-to-r from-emerald-500 to-cyan-500 h-1.5 rounded-full transition-all"
+                                    style={{
+                                      width: `${Math.min(
+                                        (detailAdmin.currentStudentCount /
+                                          detailAdmin.maxStudents) *
+                                          100,
+                                        100
+                                      )}%`,
+                                    }}
+                                  />
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
-                      )}
 
-                      <div>
-                        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                          Contact Information
-                        </h3>
-                        <div className="space-y-3">
+                        <div>
+                          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                            System Metadata
+                          </h3>
                           <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                            <Mail
-                              size={18}
-                              className="text-emerald-500 shrink-0"
-                            />
-                            <div className="min-w-0">
-                              <p className="text-xs text-slate-400">
-                                Email Address
-                              </p>
-                              <p className="text-white text-sm font-medium break-all">
-                                {detailAdmin.email}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                            <Phone
+                            <Calendar
                               size={18}
                               className="text-emerald-500 shrink-0"
                             />
                             <div>
                               <p className="text-xs text-slate-400">
-                                Phone Number
+                                Account Created
                               </p>
                               <p className="text-white text-sm font-medium">
-                                {detailAdmin.phone || "Not provided"}
+                                {formatDate(detailAdmin.createdAt)}
                               </p>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="space-y-6">
-                      <div>
-                        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                          Credentials
-                        </h3>
-                        <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                          <Key
-                            size={18}
-                            className="text-emerald-500 shrink-0"
-                          />
-                          <div className="flex-1">
-                            <p className="text-xs text-slate-400 mb-0.5">
-                              Temporary Password
-                            </p>
-                            <div className="flex items-center justify-between">
-                              <p className="text-white font-mono text-sm">
-                                {showPassword
-                                  ? detailAdmin.password ||
-                                    detailAdmin.temp_password ||
-                                    "N/A"
-                                  : "••••••••"}
-                              </p>
-                              <button
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="p-1 hover:bg-white/10 rounded-md transition-colors text-slate-400 hover:text-white"
-                              >
-                                {showPassword ? (
-                                  <EyeOff size={14} />
-                                ) : (
-                                  <Eye size={14} />
-                                )}
-                              </button>
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                            Contact Information
+                          </h3>
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                              <Mail
+                                size={18}
+                                className="text-emerald-500 shrink-0"
+                              />
+                              <div className="min-w-0">
+                                <p className="text-xs text-slate-400">
+                                  Email Address
+                                </p>
+                                <p className="text-white text-sm font-medium break-all">
+                                  {detailAdmin.email}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                              <Phone
+                                size={18}
+                                className="text-emerald-500 shrink-0"
+                              />
+                              <div>
+                                <p className="text-xs text-slate-400">
+                                  Phone Number
+                                </p>
+                                <p className="text-white text-sm font-medium">
+                                  {detailAdmin.phone || "Not provided"}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                          System Metadata
-                        </h3>
-                        <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                          <Calendar
-                            size={18}
-                            className="text-emerald-500 shrink-0"
-                          />
-                          <div>
-                            <p className="text-xs text-slate-400">
-                              Account Created
-                            </p>
-                            <p className="text-white text-sm font-medium">
-                              {formatDate(detailAdmin.createdAt)}
-                            </p>
+                        <div>
+                          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                            Credentials
+                          </h3>
+                          <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                            <Key
+                              size={18}
+                              className="text-emerald-500 shrink-0"
+                            />
+                            <div className="flex-1">
+                              <p className="text-xs text-slate-400 mb-0.5">
+                                Temporary Password
+                              </p>
+                              <div className="flex items-center justify-between">
+                                <p className="text-white font-mono text-sm">
+                                  {showPassword
+                                    ? detailAdmin.password ||
+                                      detailAdmin.temp_password ||
+                                      "N/A"
+                                    : "••••••••"}
+                                </p>
+                                <button
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="p-1 hover:bg-white/10 rounded-md transition-colors text-slate-400 hover:text-white"
+                                >
+                                  {showPassword ? (
+                                    <EyeOff size={14} />
+                                  ) : (
+                                    <Eye size={14} />
+                                  )}
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>

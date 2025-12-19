@@ -10,7 +10,7 @@ import TestHistory from "./TestHistory";
 import Leaderboard from "./LeaderBoard";
 
 const Dashboard = () => {
-  const [activeSection, setActiveSection] = useState("overview");
+  const [activeSection, setActiveSection] = useState("history");
   const { dashboardData, loading, error, refreshData } = useDashboard();
   const renderContent = () => {
     switch (activeSection) {

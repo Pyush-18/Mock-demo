@@ -13,10 +13,10 @@ import {Link} from "react-router"
 
 const Sidebar = ({ activeSection, onSectionChange }) => {
   const menuItems = [
+    { id: "history", label: "Test History", icon: Clock },
     { id: "overview", label: "Performance Overview", icon: BarChart3 },
     { id: "analytics", label: "Test Analytics", icon: PieChart },
     { id: "progress", label: "Progress Over Time", icon: TrendingUp },
-    { id: "history", label: "Test History", icon: Clock },
     { id: "leaderboard", label: "Leaderboard", icon: Trophy }
   ];
   const containerVariants = {
