@@ -7,17 +7,24 @@ import {
   getSubscriptionStatus,
 } from "../../slices/subscriptionSlice";
 import { createCheckout, verifyPayment } from "../../slices/paymentSlice";
-import {
-  getActiveSubscription,
-} from "../../../utils/subscriptionHelpers";
+import { getActiveSubscription } from "../../../utils/subscriptionHelpers";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../config/firebase";
+
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 const Pricing = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { plans } = useSelector(
-    (state) => state.subscription
-  );
+  const { plans } = useSelector((state) => state.subscription);
   const { loading: paymentLoading } = useSelector((state) => state.payment);
   const [activating, setActivating] = useState(null);
   const [refreshing, setRefreshing] = useState(true);
@@ -63,6 +70,11 @@ const Pricing = () => {
       toast.error("Please login to subscribe");
       return;
     }
+    const isLoaded = await loadRazorpayScript();
+    if (!isLoaded) {
+      toast.error("Razorpay SDK failed to load. Are you online?");
+      return;
+    }
     try {
       setActivating(planId);
       const checkoutResult = await dispatch(
@@ -90,7 +102,6 @@ const Pricing = () => {
                 userId: user.uid,
               })
             ).unwrap();
-            await new Promise((resolve) => setTimeout(resolve, 1000));
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
             if (userSnap.exists()) {
@@ -154,7 +165,9 @@ const Pricing = () => {
       {plans.length === 0 || refreshing ? (
         <div className="text-center py-20">
           <p className="text-emerald-400 text-xl animate-pulse">
-            {refreshing ? "Loading subscription status..." : "Loading pricing plans..."}
+            {refreshing
+              ? "Loading subscription status..."
+              : "Loading pricing plans..."}
           </p>
         </div>
       ) : (
