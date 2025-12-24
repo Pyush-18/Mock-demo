@@ -7,7 +7,15 @@ export default defineConfig({
     outDir: "dist",
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          vendor: [
+            "react",
+            "react-dom",
+            "react-router-dom",
+            "firebase/app",
+            "firebase/firestore",
+          ],
+        },
       },
     },
   },
