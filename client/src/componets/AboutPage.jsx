@@ -54,7 +54,7 @@ const AboutPage = () => {
 
         <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed mb-8">
           Whether you're preparing for school exams, competitive tests, or
-          strengthening your fundamentals, Eduttia adapts to your learning
+          strengthening your fundamentals, EduIITia adapts to your learning
           needs. With instant feedback, detailed analytics, and topic-wise
           progress tracking, we help you study smarter, build confidence, and
           stay ahead in every exam you prepare for.

@@ -65,7 +65,7 @@ const LoginModal = ({
         <div className="hidden md:flex md:w-1/2 bg-linear-to-br from-emerald-100 to-teal-50 dark:from-[#10b981]/10 dark:to-[#059669]/5 p-12 items-center justify-center relative overflow-hidden">
           <img
             src="/login.svg"
-            alt="ChemT Learning"
+            alt="EduIITia Learning"
             className="w-full max-w-md relative z-10 drop-shadow-2xl"
           />
         </div>
@@ -74,9 +74,9 @@ const LoginModal = ({
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-10 h-10 bg-[#10b981] rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">C</span>
+                <span className="text-white font-bold text-xl">E</span>
               </div>
-              <span className="text-gray-900 dark:text-white font-semibold text-xl">ChemT</span>
+              <span className="text-gray-900 dark:text-white font-semibold text-xl">EduIITia</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
               Welcome Back

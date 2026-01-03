@@ -72,10 +72,10 @@ const ForgotPasswordModal = ({ setShowForgot, setShowLogin }) => {
             <div className="mb-8">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-10 h-10 bg-[#10b981] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">C</span>
+                  <span className="text-white font-bold text-xl">E</span>
                 </div>
                 <span className="text-gray-900 dark:text-white font-semibold text-xl">
-                  ChemT
+                  EduIITia
                 </span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">

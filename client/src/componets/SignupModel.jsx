@@ -261,10 +261,10 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
             <div className="mb-8">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-9 h-9 bg-[#10b981] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">C</span>
+                  <span className="text-white font-bold text-lg">E</span>
                 </div>
                 <span className="text-gray-900 dark:text-white font-semibold text-lg">
-                  ChemT
+                  EduIITia
                 </span>
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -357,10 +357,10 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-9 h-9 bg-[#10b981] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">C</span>
+                  <span className="text-white font-bold text-lg">E</span>
                 </div>
                 <span className="text-gray-900 dark:text-white font-semibold text-lg">
-                  ChemT
+                  EduIITia
                 </span>
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -501,7 +501,7 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
           <div className="hidden md:flex md:w-[45%] bg-linear-to-br from-emerald-100 to-teal-50 dark:from-[#10b981]/10 dark:to-[#059669]/5 p-10 items-center justify-center relative overflow-hidden">
             <img
               src="/sign_up.svg"
-              alt="Join ChemT"
+              alt="Join EduIITia"
               className="w-full max-w-sm relative z-10 drop-shadow-2xl"
             />
           </div>
@@ -510,10 +510,10 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-9 h-9 bg-[#10b981] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">C</span>
+                  <span className="text-white font-bold text-lg">E</span>
                 </div>
                 <span className="text-gray-900 dark:text-white font-semibold text-lg">
-                  ChemT
+                  EduIITia
                 </span>
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
