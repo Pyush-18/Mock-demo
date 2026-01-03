@@ -14,8 +14,9 @@ import {
   Bar,
 } from "recharts";
 import { TrendingUp, Calendar, Target, Award, Activity } from "lucide-react";
+import { useTheme } from "../../context/ThemeProvider";
 
-const ProgressChart = ({ data, darkMode = true }) => {
+const ProgressChart = ({ data }) => {
   const [chartType, setChartType] = useState("line");
   const [selectedTestType, setSelectedTestType] = useState("all");
 
@@ -29,6 +30,8 @@ const ProgressChart = ({ data, darkMode = true }) => {
     grid: "#334155",
     cyan: "#06B6D4",
   };
+  const {theme} = useTheme()
+  const darkMode = theme === "dark"
 
   const DARK_BG = darkMode
     ? "bg-gradient-to-br from-slate-950 via-slate-900 to-black"

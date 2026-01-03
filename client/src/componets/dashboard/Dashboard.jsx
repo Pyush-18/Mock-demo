@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {RefreshCw, Sparkles } from "lucide-react";
+import { RefreshCw, Sparkles } from "lucide-react";
 import { useDashboard } from "../../context/DashboardContext";
 import PerformanceOverview from "./PerformanceOverview";
 import TestAnalytics from "./TestAnalytics";
@@ -48,9 +48,9 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-slate-200 flex relative overflow-x-hidden selection:bg-cyan-500/30">
-      <div className="fixed top-[-10%] right-[-5%] w-[600px] h-[600px] bg-cyan-900/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-[-10%] left-[20%] w-[500px] h-[500px] bg-emerald-900/10 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen bg-white dark:bg-[#050505] text-gray-900 dark:text-slate-200 flex relative overflow-x-hidden selection:bg-cyan-500/30">
+      <div className="fixed top-[-10%] right-[-5%] w-[600px] h-[600px] bg-cyan-200/20 dark:bg-cyan-900/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-[-10%] left-[20%] w-[500px] h-[500px] bg-emerald-200/20 dark:bg-emerald-900/10 rounded-full blur-[120px] pointer-events-none" />
 
       <Sidebar
         activeSection={activeSection}
@@ -58,15 +58,15 @@ const Dashboard = () => {
       />
 
       <div className="flex-1 lg:ml-72 transition-all duration-300 flex flex-col max-h-screen">
-        <header className="sticky top-0 z-40 bg-[#050505]/10 backdrop-blur-lg border-b border-slate-800/80 h-24 flex items-center">
+        <header className="sticky top-0 z-40 bg-white/90 dark:bg-[#050505]/10 backdrop-blur-lg border-b border-gray-200 dark:border-slate-800/80 h-24 flex items-center">
           <div className="px-6 lg:px-10 max-w-7xl mx-auto w-full">
             <div className="flex flex-col md:flex-row justify-between items-end gap-2">
               <div>
-                <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-white to-slate-400">
+                <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-linear-to-r from-gray-900 to-gray-600 dark:from-white dark:to-slate-400">
                   Performance Nexus
                 </h1>
-                <p className="text-slate-500 mt-1 flex items-center gap-2 text-sm">
-                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                <p className="text-gray-600 dark:text-slate-500 mt-1 flex items-center gap-2 text-sm">
+                  <Sparkles className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                   Track and analyze your decentralized metrics
                 </p>
               </div>
@@ -74,7 +74,7 @@ const Dashboard = () => {
               <button
                 onClick={refreshData}
                 disabled={loading}
-                className="flex items-center gap-2 bg-slate-900/50 text-cyan-400 px-5 py-2 rounded-xl border border-cyan-500/20 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all duration-300 backdrop-blur-md disabled:opacity-50"
+                className="flex items-center gap-2 bg-gray-100 dark:bg-slate-900/50 text-cyan-600 dark:text-cyan-400 px-5 py-2 rounded-xl border border-cyan-400/40 dark:border-cyan-500/20 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 hover:border-cyan-500/70 dark:hover:border-cyan-500/50 transition-all duration-300 backdrop-blur-md disabled:opacity-50"
               >
                 <RefreshCw
                   className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
@@ -88,9 +88,9 @@ const Dashboard = () => {
         <main className="overflow-y-auto flex-1 h-full">
           <div className="p-6 lg:p-10 pt-0 max-w-7xl mx-auto">
             <div className="relative">
-              <div className="absolute inset-0 bg-linear-to-b from-slate-900/20 to-transparent rounded-3xl -z-10" />
+              <div className="absolute inset-0 bg-linear-to-b from-gray-100/40 dark:from-slate-900/20 to-transparent rounded-3xl -z-10" />
 
-              <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl shadow-black/50 p-6 lg:p-8 min-h-[600px] animate-in fade-in duration-500 slide-in-from-bottom-4">
+              <div className="bg-white/90 dark:bg-white/5 backdrop-blur-xl rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl shadow-gray-500/10 dark:shadow-black/50 p-6 lg:p-8 min-h-[600px] animate-in fade-in duration-500 slide-in-from-bottom-4">
                 {renderContent()}
               </div>
             </div>

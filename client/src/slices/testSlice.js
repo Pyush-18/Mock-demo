@@ -29,8 +29,6 @@ const calculateAccuracy = (questions) => {
   return `${Math.round(accuracy)}%`;
 };
 
-
-// Helper function to get allowed creator IDs for a user
 const getAllowedCreatorIds = async (userId) => {
   try {
     const userDoc = await getDoc(doc(db, "users", userId));
@@ -39,22 +37,17 @@ const getAllowedCreatorIds = async (userId) => {
     const userData = userDoc.data();
     const userRole = userData.role;
 
-    // If superadmin, return null (means no filtering, see all)
     if (userRole === "superadmin") {
       return null;
     }
 
-    // If admin, return their own ID (they see only their tests)
     if (userRole === "admin") {
       return [userId];
     }
-
-    // If student, return their admin's ID (they see only their admin's tests)
     if (userRole === "student") {
       if (userData.createdBy) {
         return [userData.createdBy];
       }
-      // If student has no admin (direct registration), they see tests from all admins
       return null;
     }
 
@@ -65,7 +58,6 @@ const getAllowedCreatorIds = async (userId) => {
   }
 };
 
-// Get all tests by category with admin filtering
 export const getAllTestsByCategory = createAsyncThunk(
   "test/getAllTestsByCategory",
   async ({ categoryName, subject, subcategory }, { rejectWithValue }) => {
@@ -75,33 +67,34 @@ export const getAllTestsByCategory = createAsyncThunk(
         throw new Error("User not authenticated");
       }
 
-      // Get allowed creator IDs based on user role
       const allowedCreatorIds = await getAllowedCreatorIds(userId);
 
       const questionsRef = collection(db, "questions");
       let constraints = [];
 
-      // Add category/subject/subcategory filters
+      const normalizedCategory = categoryName
+        ? categoryName.charAt(0).toUpperCase() +
+          categoryName.slice(1).toLowerCase()
+        : null;
+
       if (subcategory) {
-        constraints.push(where("categoryName", "==", categoryName));
+        constraints.push(where("categoryName", "==", normalizedCategory));
         constraints.push(where("subject", "==", subject));
         constraints.push(where("subcategory", "==", subcategory));
       } else if (subject) {
-        constraints.push(where("categoryName", "==", categoryName));
+        constraints.push(where("categoryName", "==", normalizedCategory));
         constraints.push(where("subject", "==", subject));
-      } else if (categoryName) {
-        constraints.push(where("categoryName", "==", categoryName));
+      } else if (normalizedCategory) {
+        constraints.push(where("categoryName", "==", normalizedCategory));
       }
 
-      // Add creator filter for students assigned to an admin
       if (allowedCreatorIds !== null && allowedCreatorIds.length > 0) {
-        // For students with a specific admin
         constraints.push(where("createdBy", "in", allowedCreatorIds));
       }
-      // If allowedCreatorIds is null, no creator filter (superadmin or direct students see all)
 
       const q = query(questionsRef, ...constraints);
       const querySnapshot = await getDocs(q);
+
 
       if (querySnapshot.empty) {
         return [];
@@ -121,13 +114,11 @@ export const getAllTestsByCategory = createAsyncThunk(
 
       return tests;
     } catch (error) {
-      console.error("Error fetching tests:", error);
       return rejectWithValue(error.message);
     }
   }
 );
 
-// Get all tests with admin filtering
 export const getAllTests = createAsyncThunk(
   "test/getAllTests",
   async (_, { rejectWithValue }) => {
@@ -137,18 +128,14 @@ export const getAllTests = createAsyncThunk(
         throw new Error("User not authenticated");
       }
 
-      // Get allowed creator IDs based on user role
       const allowedCreatorIds = await getAllowedCreatorIds(userId);
 
       const questionsRef = collection(db, "questions");
       let q;
 
-      // Apply creator filter if needed
       if (allowedCreatorIds !== null && allowedCreatorIds.length > 0) {
-        // For students with a specific admin or admins viewing their own tests
         q = query(questionsRef, where("createdBy", "in", allowedCreatorIds));
       } else {
-        // For superadmin or direct students (no admin assigned)
         q = query(questionsRef);
       }
 
@@ -188,15 +175,13 @@ export const checkTestAccess = createAsyncThunk(
 
       const test = testDoc.data();
 
-      // Check if user has access to this test based on their admin
       const userDoc = await getDoc(doc(db, "users", userId));
       if (!userDoc.exists()) {
         return rejectWithValue("User not found");
       }
 
       const userData = userDoc.data();
-      
-      // Superadmin can access all tests
+
       if (userData.role === "superadmin") {
         return {
           hasAccess: true,
@@ -204,7 +189,6 @@ export const checkTestAccess = createAsyncThunk(
         };
       }
 
-      // Admin can access only their own tests
       if (userData.role === "admin") {
         if (test.createdBy !== userId) {
           return {
@@ -214,7 +198,6 @@ export const checkTestAccess = createAsyncThunk(
         }
       }
 
-      // Student can access only their admin's tests
       if (userData.role === "student" && userData.createdBy) {
         if (test.createdBy !== userData.createdBy) {
           return {
@@ -224,7 +207,6 @@ export const checkTestAccess = createAsyncThunk(
         }
       }
 
-      // Demo tests are accessible to all
       if (["demo", "Demo", "DEMO"].includes(test.testType) || test.isDemo) {
         return {
           hasAccess: true,
@@ -278,20 +260,17 @@ export const startTest = createAsyncThunk(
 
       const test = testDoc.data();
 
-      // Verify user has access to this test
       const userDoc = await getDoc(doc(db, "users", userId));
       if (!userDoc.exists()) throw new Error("User not found");
 
       const userData = userDoc.data();
 
-      // Check admin association for students
       if (userData.role === "student" && userData.createdBy) {
         if (test.createdBy !== userData.createdBy) {
           throw new Error("You don't have access to this test");
         }
       }
 
-      // Check admin ownership for admins
       if (userData.role === "admin") {
         if (test.createdBy !== userId) {
           throw new Error("You can only access tests you created");

@@ -247,24 +247,61 @@ export const updateProfile = createAsyncThunk(
       const updates = { updatedAt: serverTimestamp() };
 
       if (avatar instanceof File) {
-        const cloudinaryResponse = await uploadToCloudinary(avatar, {
-          folder: `user_avatars/${userId}`,
-          resourceType: "image",
-        });
+        const formData = new FormData();
+        formData.append("file", avatar);
+        formData.append(
+          "upload_preset",
+          import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+        );
+        formData.append("folder", `user_avatars/${userId}`);
 
-        updates.avatar = cloudinaryResponse.url;
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/${
+            import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+          }/image/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to upload avatar");
+        }
+
+        const cloudinaryResponse = await response.json();
+        updates.avatar = cloudinaryResponse.secure_url;
+
         await firebaseUpdateProfile(auth.currentUser, {
-          photoURL: cloudinaryResponse.url,
+          photoURL: cloudinaryResponse.secure_url,
         });
       }
 
       if (coverImage instanceof File) {
-        const cloudinaryResponse = await uploadToCloudinary(coverImage, {
-          folder: `user_covers/${userId}`,
-          resourceType: "image",
-        });
+        const formData = new FormData();
+        formData.append("file", coverImage);
+        formData.append(
+          "upload_preset",
+          import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+        );
+        formData.append("folder", `user_covers/${userId}`);
 
-        updates.coverImage = cloudinaryResponse.url;
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/${
+            import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+          }/image/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to upload cover image");
+        }
+
+        const cloudinaryResponse = await response.json();
+        updates.coverImage = cloudinaryResponse.secure_url;
       }
 
       if (name) {

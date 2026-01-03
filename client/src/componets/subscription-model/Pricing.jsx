@@ -155,20 +155,20 @@ const Pricing = () => {
   return (
     <div
       id="pricing"
-      className="min-h-screen text-white py-20 px-5 relative overflow-hidden font-inter"
+      className="min-h-screen bg-white dark:bg-transparent text-gray-900 dark:text-white py-20 px-5 relative overflow-hidden font-inter"
     >
       <div className="text-center mx-auto max-w-7xl py-10 px-5 relative z-10">
         <h1 className="text-4xl md:text-6xl font-extrabold bg-linear-to-r from-emerald-300 via-teal-400 to-cyan-500 bg-clip-text text-transparent mb-4 tracking-tighter">
           Pricing Plans That Fit You
         </h1>
-        <p className="text-gray-400 text-xl max-w-3xl mx-auto">
+        <p className="text-gray-600 dark:text-gray-400 text-xl max-w-3xl mx-auto">
           Choose the perfect plan to unlock comprehensive study materials,
           unlimited practice, and intelligent analytics.
         </p>
       </div>
       {plans.length === 0 || refreshing ? (
         <div className="text-center py-20">
-          <p className="text-emerald-400 text-xl animate-pulse">
+          <p className="text-emerald-600 dark:text-emerald-400 text-xl animate-pulse">
             {refreshing
               ? "Loading subscription status..."
               : "Loading pricing plans..."}
@@ -183,18 +183,18 @@ const Pricing = () => {
             return (
               <div
                 key={plan.id}
-                className={`relative bg-[#0F0F0F] border rounded-3xl shadow-2xl transition-all duration-500 flex flex-col justify-between
-                    ${
-                      isActive
-                        ? "border-emerald-500 shadow-[0_0_40px_rgba(52,211,153,0.5)]"
-                        : "border-white/10 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(52,211,153,0.15)]"
-                    }
-                    ${
-                      isPro
-                        ? "order-first lg:order-0 scale-[1.05] border-emerald-400/80 shadow-[0_0_70px_rgba(52,211,153,0.6)]"
-                        : ""
-                    }
-                    `}
+                className={`relative bg-white dark:bg-[#0F0F0F] border rounded-3xl shadow-2xl transition-all duration-500 flex flex-col justify-between
+                  ${
+                    isActive
+                      ? "border-emerald-500 shadow-[0_0_40px_rgba(52,211,153,0.5)]"
+                      : "border-gray-200 dark:border-white/10 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(52,211,153,0.15)]"
+                  }
+                  ${
+                    isPro
+                      ? "order-first lg:order-0 scale-[1.05] border-emerald-400/80 shadow-[0_0_70px_rgba(52,211,153,0.6)]"
+                      : ""
+                  }
+                  `}
               >
                 {isPro && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1.5 bg-linear-to-r from-emerald-400 to-teal-500 text-black font-extrabold text-sm rounded-full shadow-xl z-20">
@@ -214,23 +214,25 @@ const Pricing = () => {
                   <div className="p-0 grow">
                     <h2
                       className={`text-3xl font-bold mb-1 ${
-                        isPro ? "text-emerald-300" : "text-white"
+                        isPro
+                          ? "text-emerald-600 dark:text-emerald-300"
+                          : "text-gray-900 dark:text-white"
                       }`}
                     >
                       {plan.name}
                     </h2>
-                    <p className="text-gray-500 text-sm mb-6">
+                    <p className="text-gray-500 dark:text-gray-500 text-sm mb-6">
                       {plan.description}
                     </p>
                     <div className="mb-8 mt-4">
-                      <div className="text-5xl font-extrabold text-white">
+                      <div className="text-5xl font-extrabold text-gray-900 dark:text-white">
                         {isFree ? "Free" : `₹${plan.price}`}
-                        <span className="text-base font-medium text-gray-500 ml-2">
+                        <span className="text-base font-medium text-gray-500 dark:text-gray-500 ml-2">
                           / {plan.duration === 365 ? "year" : "month"}
                         </span>
                       </div>
                       {!isFree && (
-                        <p className="text-sm text-gray-600 mt-1">
+                        <p className="text-sm text-gray-600 dark:text-gray-600 mt-1">
                           {plan.duration === 365
                             ? "Save 17%"
                             : "Billed monthly"}
@@ -239,9 +241,12 @@ const Pricing = () => {
                     </div>
                     <ul className="space-y-4 text-base">
                       {plan.features?.map((f, i) => (
-                        <li key={i} className="flex items-start text-gray-300">
+                        <li
+                          key={i}
+                          className="flex items-start text-gray-700 dark:text-gray-300"
+                        >
                           <svg
-                            className="w-5 h-5 text-emerald-400 mr-3 shrink-0 mt-1"
+                            className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-3 shrink-0 mt-1"
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2.5"
@@ -258,17 +263,17 @@ const Pricing = () => {
                       ))}
                     </ul>
                   </div>
-                  <div className="pt-8 border-t border-white/5 mt-8">
+                  <div className="pt-8 border-t border-gray-200 dark:border-white/5 mt-8">
                     {isFree ? (
                       <button
-                        className="w-full py-3.5 rounded-xl font-semibold text-gray-500 bg-white/5 border border-white/10 transition-all duration-300 cursor-not-allowed"
+                        className="w-full py-3.5 rounded-xl font-semibold text-gray-500 dark:text-gray-500 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 transition-all duration-300 cursor-not-allowed"
                         disabled
                       >
                         Currently Active
                       </button>
                     ) : isActive ? (
                       <button
-                        className="w-full py-3.5 rounded-xl bg-emerald-700/30 border border-emerald-500/50 text-emerald-300 font-bold cursor-default shadow-inner shadow-emerald-900/50 transition-all duration-300"
+                        className="w-full py-3.5 rounded-xl bg-emerald-100 dark:bg-emerald-700/30 border border-emerald-500/50 text-emerald-700 dark:text-emerald-300 font-bold cursor-default shadow-inner transition-all duration-300"
                         disabled
                       >
                         Active Subscription

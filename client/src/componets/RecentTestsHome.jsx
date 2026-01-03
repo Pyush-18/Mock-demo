@@ -1,12 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
-import {
-  TrendingUp,
-  ChevronRight,
-  LockIcon,
-} from "lucide-react";
+import { TrendingUp, ChevronRight, LockIcon, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import { getAllTestsByCategory, startTest } from "../slices/testSlice";
 import InstructionModal from "./test/InstructionModal";
@@ -16,26 +12,32 @@ import AppLayout from "../layout/AppLayout";
 const RecentTestsHome = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
   const { user } = useSelector((state) => state.auth);
   const { tests, allTestsLoading } = useSelector((state) => state.test);
 
   const [selectedTest, setSelectedTest] = useState(null);
   const [showInstructions, setShowInstructions] = useState(false);
   const [starting, setStarting] = useState(null);
-  
+
+  // Get category from URL params
+  const categoryFromUrl = searchParams.get("category");
 
   useEffect(() => {
-    dispatch(getAllTestsByCategory({}));
-  }, [dispatch]);
+    // Load tests based on category from URL
+    if (categoryFromUrl) {
+      dispatch(getAllTestsByCategory({ categoryName: categoryFromUrl }));
+    } else {
+      dispatch(getAllTestsByCategory({}));
+    }
+  }, [dispatch, categoryFromUrl]);
 
   const handleCategorySelect = (category, subject, subcategory) => {
-    
     const filters = {
       categoryName: category.name,
       subject: subject,
     };
 
-    
     if (subcategory) {
       filters.subcategory = subcategory;
     }
@@ -106,65 +108,125 @@ const RecentTestsHome = () => {
     );
   };
 
-  const recentTests = tests?.slice(0, 3) || [];
+  const getCategoryTitle = () => {
+    switch (categoryFromUrl?.toLowerCase()) {
+      case "school":
+        return "School Tests";
+      case "entrance":
+        return "Entrance Exam Tests";
+      case "recruitment":
+        return "Recruitment Exam Tests";
+      default:
+        return "Next-Gen Chemistry Testing";
+    }
+  };
+
+  const getCategoryDescription = () => {
+    switch (categoryFromUrl?.toLowerCase()) {
+      case "school":
+        return "Comprehensive test series for Classes 1-12 covering all subjects";
+      case "entrance":
+        return "Prepare for JEE, NEET, UPSC, and other competitive entrance exams";
+      case "recruitment":
+        return "Government job exams including SSC, Banking, Railway & more";
+      default:
+        return "Experience decentralized learning. Start with free demo tests or unlock the full potential with our PRO network.";
+    }
+  };
+
+  const recentTests = tests || [];
 
   return (
     <AppLayout>
-      <div className="relative w-full min-h-screen overflow-hidden">
+      <div className="relative w-full min-h-screen overflow-hidden bg-white dark:bg-transparent">
         <div className="relative z-10 w-full max-w-7xl mx-auto py-12 px-6">
-     
           <div className="text-center max-w-4xl mx-auto mb-16 space-y-4">
+
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/5 mb-4">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-xs font-medium text-emerald-400 tracking-wide uppercase">
+              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 tracking-wide uppercase">
                 Library Live
               </span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-              Next-Gen Chemistry{" "}
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 to-teal-500">
-                Testing
-              </span>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white tracking-tight">
+              {categoryFromUrl ? (
+                getCategoryTitle()
+              ) : (
+                <>
+                  Next-Gen Chemistry{" "}
+                  <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-600 dark:from-emerald-400 to-teal-600 dark:to-teal-500">
+                    Testing
+                  </span>
+                </>
+              )}
             </h1>
 
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Experience decentralized learning. Start with free demo tests or
-              unlock the full potential with our PRO network.
+            <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
+              {getCategoryDescription()}
             </p>
+
+            {/* Category Badge */}
+            {categoryFromUrl && (
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-500/20 bg-blue-50 dark:bg-blue-500/10 backdrop-blur-md">
+                <span className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                  📚 {categoryFromUrl}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="mb-12">
-            <ExamCategorySelector onCategorySelect={handleCategorySelect} />
+            <ExamCategorySelector 
+              onCategorySelect={handleCategorySelect}
+              filterByCategory={categoryFromUrl} 
+            />
           </div>
 
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <TrendingUp className="text-emerald-400" size={28} />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <TrendingUp
+                  className="text-emerald-600 dark:text-emerald-400"
+                  size={28}
+                />
                 Available Tests
+                {recentTests.length > 0 && (
+                  <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                    ({recentTests.length}{" "}
+                    {recentTests.length === 1 ? "test" : "tests"})
+                  </span>
+                )}
               </h2>
             </div>
 
             {allTestsLoading ? (
               <div className="flex flex-col items-center justify-center py-32">
-                <div className="w-16 h-16 border-4 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin"></div>
-                <p className="mt-6 text-emerald-400/80 font-mono text-sm tracking-widest animate-pulse">
+                <div className="w-16 h-16 border-4 border-emerald-500/20 border-t-emerald-600 dark:border-t-emerald-400 rounded-full animate-spin"></div>
+                <p className="mt-6 text-emerald-600/80 dark:text-emerald-400/80 font-mono text-sm tracking-widest animate-pulse">
                   INITIALIZING...
                 </p>
               </div>
             ) : !tests || tests.length === 0 ? (
-             
-              <div className="text-center py-20 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 max-w-2xl mx-auto border-dashed">
-                <p className="text-2xl font-semibold text-gray-300 mb-2">
-                  No Data Found
+              <div className="text-center py-20 bg-gray-50 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-gray-200 dark:border-white/10 max-w-2xl mx-auto border-dashed">
+                <p className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  No Tests Found
                 </p>
-                <p className="text-gray-500">
-                  System could not locate tests for this category.
+                <p className="text-gray-500 mb-6">
+                  {categoryFromUrl
+                    ? `No tests available for ${categoryFromUrl} category yet.`
+                    : "System could not locate tests for this category."}
                 </p>
+                {categoryFromUrl && (
+                  <button
+                    onClick={() => navigate("/")}
+                    className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-colors"
+                  >
+                    Browse All Categories
+                  </button>
+                )}
               </div>
             ) : (
-             
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {recentTests.map((test, i) => {
                   const locked = !checkAccess(test);
@@ -172,11 +234,12 @@ const RecentTestsHome = () => {
                     test.isDemo || test.testType?.toLowerCase() === "demo";
                   const isStarting = starting === test.id;
                   return (
-                    <motion.div key={`${test.testType}-${i}`}
+                    <motion.div
+                      key={`${test.id}-${i}`}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="group relative bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-6 hover:border-emerald-500/30 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                      className="group relative bg-white dark:bg-[#0A0A0A]/80 backdrop-blur-xl border border-gray-200 dark:border-white/5 rounded-3xl p-6 hover:border-emerald-500/30 transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-sm dark:shadow-none"
                     >
                       <div className="absolute inset-0 bg-linear-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
@@ -197,47 +260,47 @@ const RecentTestsHome = () => {
                           >
                             {test.testType}
                           </span>
-                          
+
                           {test.subject && (
-                            <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border bg-purple-500/10 text-purple-400 border-purple-500/20">
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">
                               {test.subject}
                             </span>
                           )}
 
                           {test.subcategory && (
-                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border bg-teal-500/10 text-teal-400 border-teal-500/20 flex items-center gap-1">
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20 flex items-center gap-1">
                               <ChevronRight size={10} />
                               {test.subcategory}
                             </span>
                           )}
                         </div>
 
-                        <h2 className="text-xl font-bold text-white mb-3 line-clamp-1 group-hover:text-emerald-400 transition-colors">
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                           {test.testName}
                         </h2>
 
-                        <p className="text-gray-400 text-sm mb-6 line-clamp-2 h-10">
+                        <p className="text-gray-600 dark:text-gray-400 text-sm mb-6 line-clamp-2 h-10">
                           {test.title ||
                             test.description ||
                             "Standardized assessment protocol for chemistry evaluation."}
                         </p>
 
                         <div className="grid grid-cols-2 gap-3 mb-6">
-                          <div className="bg-white/5 border border-white/5 rounded-xl p-3">
+                          <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-xl p-3">
                             <div className="text-xs text-gray-500 mb-1">
                               Questions
                             </div>
-                            <div className="text-white font-mono font-semibold">
+                            <div className="text-gray-900 dark:text-white font-mono font-semibold">
                               {test.totalQuestions ||
                                 test.questions?.length ||
                                 "00"}
                             </div>
                           </div>
-                          <div className="bg-white/5 border border-white/5 rounded-xl p-3">
+                          <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-xl p-3">
                             <div className="text-xs text-gray-500 mb-1">
                               Duration
                             </div>
-                            <div className="text-white font-mono font-semibold">
+                            <div className="text-gray-900 dark:text-white font-mono font-semibold">
                               {test.makeTime || test.timeLimit
                                 ? `${test.makeTime || test.timeLimit}m`
                                 : "--"}
@@ -251,15 +314,15 @@ const RecentTestsHome = () => {
                         disabled={locked || isStarting}
                         className={`relative w-full py-3.5 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 overflow-hidden ${
                           locked
-                            ? "bg-white/5 text-gray-500 border border-white/5 hover:border-white/10 cursor-not-allowed"
+                            ? "bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/10 cursor-not-allowed"
                             : isStarting
-                            ? "bg-emerald-900/50 text-emerald-400 cursor-wait"
-                            : "bg-linear-to-r from-emerald-400 to-teal-600 text-black shadow-[0_0_20px_rgba(52,211,153,0.2)] hover:shadow-[0_0_25px_rgba(52,211,153,0.4)] hover:scale-[1.02]"
+                            ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 cursor-wait"
+                            : "bg-linear-to-r from-emerald-500 dark:from-emerald-400 to-teal-600 text-white dark:text-black shadow-[0_0_20px_rgba(52,211,153,0.2)] hover:shadow-[0_0_25px_rgba(52,211,153,0.4)] hover:scale-[1.02]"
                         }`}
                       >
                         {isStarting ? (
                           <div className="flex items-center justify-center gap-2">
-                            <div className="h-4 w-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
+                            <div className="h-4 w-4 border-2 border-emerald-600 dark:border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
                             <span>INITIALIZING...</span>
                           </div>
                         ) : locked ? (

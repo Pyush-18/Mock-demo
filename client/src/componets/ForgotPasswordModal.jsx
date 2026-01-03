@@ -40,7 +40,7 @@ const ForgotPasswordModal = ({ setShowForgot, setShowLogin }) => {
         toast.success(result.payload.message);
       }
     } catch (error) {
-      if(error.payload){
+      if (error.payload) {
         toast.error(error.payload);
       }
     }
@@ -48,19 +48,19 @@ const ForgotPasswordModal = ({ setShowForgot, setShowLogin }) => {
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 animate-fadeIn">
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl shadow-2xl w-[95%] sm:w-[900px] overflow-hidden relative animate-slideUp">
+      <div className="bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl shadow-2xl w-[95%] sm:w-[900px] overflow-hidden relative animate-slideUp">
         <button
           onClick={() => {
             setShowForgot(false);
             setShowLogin(true);
           }}
-          className="absolute top-6 right-6 text-gray-400 hover:text-[#10b981] text-2xl font-bold transition-all z-10"
+          className="absolute top-6 right-6 text-gray-600 dark:text-gray-400 hover:text-[#10b981] dark:hover:text-[#10b981] text-2xl font-bold transition-all z-10"
         >
           <X size={18} />
         </button>
 
         <div className="flex flex-col md:flex-row">
-          <div className="hidden md:flex md:w-1/2 bg-linear-to-br from-[#10b981]/10 to-[#059669]/5 p-12 items-center justify-center relative overflow-hidden">
+          <div className="hidden md:flex md:w-1/2 bg-linear-to-br from-emerald-100 to-teal-50 dark:from-[#10b981]/10 dark:to-[#059669]/5 p-12 items-center justify-center relative overflow-hidden">
             <img
               src="/forgot_password.svg"
               alt="Reset Password"
@@ -74,12 +74,14 @@ const ForgotPasswordModal = ({ setShowForgot, setShowLogin }) => {
                 <div className="w-10 h-10 bg-[#10b981] rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xl">C</span>
                 </div>
-                <span className="text-white font-semibold text-xl">ChemT</span>
+                <span className="text-gray-900 dark:text-white font-semibold text-xl">
+                  ChemT
+                </span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
                 Forgot Password?
               </h2>
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
                 No worries! Enter your registered email and we'll send you a
                 reset link.
               </p>
@@ -87,7 +89,7 @@ const ForgotPasswordModal = ({ setShowForgot, setShowLogin }) => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-gray-300 text-sm mb-2 font-medium">
+                <label className="block text-gray-700 dark:text-gray-300 text-sm mb-2 font-medium">
                   Email Address
                 </label>
                 <input
@@ -95,7 +97,7 @@ const ForgotPasswordModal = ({ setShowForgot, setShowLogin }) => {
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-white placeholder-gray-500 transition-all duration-200"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-300 dark:border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 transition-all duration-200"
                   required
                 />
               </div>
@@ -108,7 +110,7 @@ const ForgotPasswordModal = ({ setShowForgot, setShowLogin }) => {
                 {loading ? "Sending..." : "Send Reset Link"}
               </button>
 
-              <p className="text-center text-sm text-gray-400 mt-6">
+              <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
                 Remember your password?{" "}
                 <span
                   onClick={() => {

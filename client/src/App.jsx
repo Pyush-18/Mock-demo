@@ -19,12 +19,17 @@ const TestAnalysis = lazy(() => import("./ui/TestAnalysis"));
 const ResetPasswordPage = lazy(() => import("./componets/ResetPasswordPage"));
 const SuperApp = lazy(() => import("./super-admin/SuperApp"));
 const AdminDashboard = lazy(() => import("./componets/admin/AdminDashboard"));
+const LegalPages = lazy(() => import("./componets/LegalPages"));
 
 import { TestProvider } from "./context/TestContext.jsx";
 import { DashboardProvider } from "./context/DashboardContext.jsx";
 import { AdminProvider } from "./context/AdminContext.jsx";
 import { LeaderboardProvider } from "./context/LeaderboardContext.jsx";
 import { SubscriptionProvider } from "./context/SubscriptionContext.jsx";
+import StudentStudyMaterial from "./componets/StudentStudyMaterial.jsx";
+import { AnimatePresence } from "framer-motion";
+import ScrollToTop from "./componets/ScrollToTop.jsx";
+import { ThemeProvider } from "./context/ThemeProvider.jsx";
 
 const StudentRoutes = () => (
   <SubscriptionProvider>
@@ -36,6 +41,7 @@ const StudentRoutes = () => (
             <Route path="/profilePage" element={<ProfilePage />} />
             <Route path="/test/:testId" element={<TestInterface />} />
             <Route path="/study" element={<RecentTestsHome />} />
+            <Route path="/study-material" element={<StudentStudyMaterial />} />
             <Route
               path="/test-analysis/:attemptId"
               element={<TestAnalysis />}
@@ -50,9 +56,11 @@ const StudentRoutes = () => (
 
 const AdminRoutes = () => (
   <AdminProvider>
+    <ThemeProvider>
     <Routes>
       <Route path="/*" element={<AdminDashboard />} />
     </Routes>
+    </ThemeProvider>
   </AdminProvider>
 );
 
@@ -114,78 +122,86 @@ const App = () => {
     initializeAuth();
   }, [dispatch]);
   return (
-    <div className="relative min-h-screen w-full text-gray-200">
+    <div className="relative min-h-screen w-full text-gray-900 dark:text-gray-200">
       <Toaster position="top-center" />
-      {(!user || user.role === "student") && <SpotlightBackground />}
+      <SpotlightBackground />
 
       <SubscriptionMonitor />
 
       <div className="relative z-10">
         <Suspense
           fallback={
-            <div className="flex h-screen items-center justify-center">
+            <div className="flex h-screen items-center justify-center bg-white dark:bg-transparent">
               Loading...
             </div>
           }
         >
-          <Routes>
-            <Route
-              path="/super/*"
-              element={
-                <ProtectedRoute allowedRoles={["superadmin"]}>
-                  <SuperAdminRoutes />
-                </ProtectedRoute>
-              }
-            />
+          <ScrollToTop />
 
-            <Route
-              path="/admin/*"
-              element={
-                <ProtectedRoute allowedRoles={["admin"]}>
-                  <AdminRoutes />
-                </ProtectedRoute>
-              }
-            />
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              {/* Super Admin */}
+              <Route
+                path="/super/*"
+                element={
+                  <ProtectedRoute allowedRoles={["superadmin"]}>
+                    <SuperAdminRoutes />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/*"
-              element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                  <StudentRoutes />
-                </ProtectedRoute>
-              }
-            />
+              {/* Admin */}
+              <Route
+                path="/admin/*"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <AdminRoutes />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/"
-              element={
-                user?.role === "superadmin" ? (
-                  <Navigate to="/super/dashboard" replace />
-                ) : user?.role === "admin" ? (
-                  <Navigate to="/admin/dashboard" replace />
-                ) : user?.role === "student" ? (
-                  <Home />
-                ) : (
-                  <Home />
-                )
-              }
-            />
+              {/* Student */}
+              <Route
+                path="/*"
+                element={
+                  <ProtectedRoute allowedRoles={["student"]}>
+                    <StudentRoutes />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="*"
-              element={
-                user?.role === "superadmin" ? (
-                  <Navigate to="/super/dashboard" replace />
-                ) : user?.role === "admin" ? (
-                  <Navigate to="/admin/dashboard" replace />
-                ) : user?.role === "student" ? (
-                  <Navigate to="/student/dashboard" replace />
-                ) : (
-                  <Navigate to="/" replace />
-                )
-              }
-            />
-          </Routes>
+              {/* Legal Pages (PUBLIC) */}
+              <Route path="/legal-terms/:type?" element={<LegalPages />} />
+
+              {/* Home */}
+              <Route
+                path="/"
+                element={
+                  user?.role === "superadmin" ? (
+                    <Navigate to="/super/dashboard" replace />
+                  ) : user?.role === "admin" ? (
+                    <Navigate to="/admin/dashboard" replace />
+                  ) : (
+                    <Home />
+                  )
+                }
+              />
+
+              {/* Catch-all */}
+              <Route
+                path="*"
+                element={
+                  user?.role === "superadmin" ? (
+                    <Navigate to="/super/dashboard" replace />
+                  ) : user?.role === "admin" ? (
+                    <Navigate to="/admin/dashboard" replace />
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
+                }
+              />
+            </Routes>
+          </AnimatePresence>
         </Suspense>
       </div>
     </div>

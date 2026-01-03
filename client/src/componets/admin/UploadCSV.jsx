@@ -183,7 +183,6 @@ const UploadCSV = () => {
         header: true,
         skipEmptyLines: true,
         complete: (results) => {
-
           const questions = results.data.map((row) => {
             const correct =
               row.correctAnswer || row.answer || row.Answer || row.correct;
@@ -652,21 +651,22 @@ const UploadCSV = () => {
       : [];
 
   const inputClasses =
-    "w-full bg-[#0a0a0a] border border-white/10 text-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-gray-600";
-  const labelClasses = "block text-sm font-medium text-gray-400 mb-2 ml-1";
+    "w-full bg-gray-100 dark:bg-[#0a0a0a] border border-gray-300 dark:border-white/10 text-gray-900 dark:text-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-gray-500 dark:placeholder:text-gray-600";
+  const labelClasses =
+    "block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2 ml-1";
 
   return (
-    <div className="min-h-screen text-white p-6 md:p-8 bg-linear-to-b from-emerald-950/20 via-black to-black">
+    <div className="min-h-screen rounded-2xl text-gray-900 dark:text-white p-6 md:p-8 bg-gray-50 dark:bg-black">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-4xl mx-auto"
       >
         <div className="mb-8">
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-white to-gray-400">
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
             Upload Questions
           </h1>
-          <p className="text-gray-500 mt-2">
+          <p className="text-gray-600 dark:text-gray-500 mt-2">
             Choose traditional CSV upload or AI-powered document parsing
           </p>
         </div>
@@ -677,12 +677,12 @@ const UploadCSV = () => {
             className={`flex-1 p-4 rounded-xl border-2 transition-all ${
               uploadMode === "csv"
                 ? "border-emerald-500 bg-emerald-500/10"
-                : "border-white/10 bg-white/5 hover:border-white/20"
+                : "border-gray-300 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:border-gray-400 dark:hover:border-white/20"
             }`}
           >
             <FileSpreadsheet className="mx-auto mb-2" size={24} />
             <div className="font-semibold">Traditional CSV</div>
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-gray-600 dark:text-gray-500 mt-1">
               Structured format upload
             </div>
           </button>
@@ -692,20 +692,20 @@ const UploadCSV = () => {
             className={`flex-1 p-4 rounded-xl border-2 transition-all ${
               uploadMode === "ai"
                 ? "border-purple-500 bg-purple-500/10"
-                : "border-white/10 bg-white/5 hover:border-white/20"
+                : "border-gray-300 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:border-gray-400 dark:hover:border-white/20"
             }`}
           >
             <Brain className="mx-auto mb-2" size={24} />
             <div className="font-semibold flex items-center justify-center gap-2">
               AI Parser <Sparkles size={14} className="text-purple-400" />
             </div>
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-gray-600 dark:text-gray-500 mt-1">
               PDF, DOCX, TXT, CSV
             </div>
           </button>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+        <div className="bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-300 dark:border-white/10 rounded-3xl p-8 shadow-2xl">
           <AnimatePresence>
             {message.text && (
               <motion.div
@@ -714,10 +714,10 @@ const UploadCSV = () => {
                 exit={{ opacity: 0, height: 0 }}
                 className={`flex items-center gap-3 p-4 rounded-xl mb-6 border ${
                   message.type === "error"
-                    ? "bg-red-500/10 border-red-500/20 text-red-400"
+                    ? "bg-red-100 dark:bg-red-500/10 border-red-300 dark:border-red-500/20 text-red-700 dark:text-red-400"
                     : message.type === "info"
-                    ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
-                    : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                    ? "bg-blue-100 dark:bg-blue-500/10 border-blue-300 dark:border-blue-500/20 text-blue-700 dark:text-blue-400"
+                    : "bg-emerald-100 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
                 }`}
               >
                 {message.type === "error" ? (
@@ -731,7 +731,7 @@ const UploadCSV = () => {
                 <button
                   type="button"
                   onClick={() => setMessage({ type: "", text: "" })}
-                  className="ml-auto hover:text-white"
+                  className="ml-auto hover:text-gray-900 dark:hover:text-white"
                 >
                   <X size={16} />
                 </button>
@@ -798,13 +798,13 @@ const UploadCSV = () => {
                 <option
                   key={type.value}
                   value={type.value}
-                  className="bg-gray-900"
+                  className="bg-white dark:bg-gray-900"
                 >
                   {type.icon} {type.label}
                 </option>
               ))}
             </select>
-            <p className="text-xs text-gray-500 my-2 ml-1">
+            <p className="text-xs text-gray-600 dark:text-gray-500 my-2 ml-1">
               {formData.testType === "demo" &&
                 "✨ Demo tests are free for all users"}
               {formData.testType === "multiple_choice" &&
@@ -832,7 +832,6 @@ const UploadCSV = () => {
 
             <div>
               <label className={labelClasses}>Exam Category *</label>
-
               <select
                 value={selectedCategoryId}
                 onChange={(e) => {
@@ -843,11 +842,15 @@ const UploadCSV = () => {
                 className={`${inputClasses} appearance-none cursor-pointer`}
                 required
               >
-                <option value="" className="bg-gray-900">
+                <option value="" className="bg-white dark:bg-gray-900">
                   Select Category
                 </option>
                 {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id} className="bg-gray-900">
+                  <option
+                    key={cat.id}
+                    value={cat.id}
+                    className="bg-white dark:bg-gray-900"
+                  >
                     {cat.name} ({cat.type})
                   </option>
                 ))}
@@ -866,7 +869,7 @@ const UploadCSV = () => {
                 required
                 disabled={!selectedCategoryId}
               >
-                <option value="" className="bg-gray-900">
+                <option value="" className="bg-white dark:bg-gray-900">
                   {!selectedCategoryId
                     ? "Select a category first"
                     : "Select Subject"}
@@ -878,7 +881,7 @@ const UploadCSV = () => {
                     <option
                       key={subjName}
                       value={subjName}
-                      className="bg-gray-900"
+                      className="bg-white dark:bg-gray-900"
                     >
                       {subjName}
                     </option>
@@ -886,7 +889,7 @@ const UploadCSV = () => {
                 })}
               </select>
               {!selectedCategoryId && (
-                <p className="text-xs text-gray-500 mt-2 ml-1">
+                <p className="text-xs text-gray-600 dark:text-gray-500 mt-2 ml-1">
                   Please select a category to see available subjects
                 </p>
               )}
@@ -894,7 +897,9 @@ const UploadCSV = () => {
             <div>
               <label className={labelClasses}>
                 Subcategory
-                <span className="text-gray-600 ml-1">(Optional)</span>
+                <span className="text-gray-500 dark:text-gray-600 ml-1">
+                  (Optional)
+                </span>
               </label>
               <select
                 value={selectedSubcategory}
@@ -904,7 +909,7 @@ const UploadCSV = () => {
                   !selectedSubject || availableSubcategories.length === 0
                 }
               >
-                <option value="" className="bg-gray-900">
+                <option value="" className="bg-white dark:bg-gray-900">
                   {!selectedSubject
                     ? "Select a subject first"
                     : availableSubcategories.length === 0
@@ -912,18 +917,22 @@ const UploadCSV = () => {
                     : "Select Subcategory (Optional)"}
                 </option>
                 {availableSubcategories.map((subcat) => (
-                  <option key={subcat} value={subcat} className="bg-gray-900">
+                  <option
+                    key={subcat}
+                    value={subcat}
+                    className="bg-white dark:bg-gray-900"
+                  >
                     <ChevronRight className="inline" size={12} /> {subcat}
                   </option>
                 ))}
               </select>
               {selectedSubject && availableSubcategories.length === 0 && (
-                <p className="text-xs text-gray-500 mt-2 ml-1">
+                <p className="text-xs text-gray-600 dark:text-gray-500 mt-2 ml-1">
                   This subject has no subcategories
                 </p>
               )}
               {selectedSubcategory && (
-                <div className="mt-2 flex items-center gap-2 text-xs text-teal-400 bg-teal-500/10 p-2 rounded-lg border border-teal-500/20">
+                <div className="mt-2 flex items-center gap-2 text-xs text-teal-700 dark:text-teal-400 bg-teal-100 dark:bg-teal-500/10 p-2 rounded-lg border border-teal-300 dark:border-teal-500/20">
                   <ChevronRight size={12} />
                   Questions will be uploaded to: {selectedSubject} →{" "}
                   {selectedSubcategory}
@@ -946,9 +955,9 @@ const UploadCSV = () => {
                     : "border-emerald-500 bg-emerald-500/10"
                   : file
                   ? uploadMode === "ai"
-                    ? "border-purple-500/50 bg-purple-900/10"
-                    : "border-emerald-500/50 bg-emerald-900/10"
-                  : "border-white/10 bg-black/20 hover:border-white/20 hover:bg-black/40"
+                    ? "border-purple-500/50 bg-purple-100 dark:bg-purple-900/10"
+                    : "border-emerald-500/50 bg-emerald-100 dark:bg-emerald-900/10"
+                  : "border-gray-300 dark:border-white/10 bg-gray-50 dark:bg-black/20 hover:border-gray-400 dark:hover:border-white/20 hover:bg-gray-100 dark:hover:bg-black/40"
               }`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
@@ -975,20 +984,20 @@ const UploadCSV = () => {
                     <div
                       className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 border ${
                         uploadMode === "ai"
-                          ? "bg-purple-500/20 text-purple-400 border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
-                          : "bg-emerald-500/20 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                          ? "bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-300 dark:border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
+                          : "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
                       }`}
                     >
                       <FileType size={32} />
                     </div>
-                    <p className="text-lg font-medium text-white">
+                    <p className="text-lg font-medium text-gray-900 dark:text-white">
                       {file.name}
                     </p>
                     <p
                       className={`text-sm mt-1 ${
                         uploadMode === "ai"
-                          ? "text-purple-400"
-                          : "text-emerald-400"
+                          ? "text-purple-600 dark:text-purple-400"
+                          : "text-emerald-600 dark:text-emerald-400"
                       }`}
                     >
                       {uploadMode === "ai"
@@ -999,27 +1008,27 @@ const UploadCSV = () => {
                 ) : (
                   <>
                     <div
-                      className={`w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-4 text-gray-400 group-hover:scale-110 transition-all duration-300 shadow-lg ${
+                      className={`w-16 h-16 bg-gray-200 dark:bg-white/5 rounded-2xl flex items-center justify-center mb-4 text-gray-500 dark:text-gray-400 group-hover:scale-110 transition-all duration-300 shadow-lg ${
                         uploadMode === "ai"
-                          ? "group-hover:text-purple-400"
-                          : "group-hover:text-emerald-400"
+                          ? "group-hover:text-purple-600 dark:group-hover:text-purple-400"
+                          : "group-hover:text-emerald-600 dark:group-hover:text-emerald-400"
                       }`}
                     >
                       <Upload size={30} />
                     </div>
-                    <p className="text-lg font-medium text-gray-300">
+                    <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
                       Drag and drop {uploadMode === "csv" ? "CSV" : "document"}{" "}
                       file
                     </p>
-                    <p className="text-sm text-gray-500 mt-2 mb-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-500 mt-2 mb-4">
                       or click to browse from device
                     </p>
                     <span
-                      className={`px-4 py-2 bg-white/10 rounded-lg text-sm text-gray-300 transition-colors font-medium ${
+                      className={`px-4 py-2 bg-gray-200 dark:bg-white/10 rounded-lg text-sm text-gray-700 dark:text-gray-300 transition-colors font-medium ${
                         uploadMode === "ai"
-                          ? "group-hover:bg-purple-500"
-                          : "group-hover:bg-emerald-500"
-                      } group-hover:text-black`}
+                          ? "group-hover:bg-purple-600 dark:group-hover:bg-purple-500"
+                          : "group-hover:bg-emerald-600 dark:group-hover:bg-emerald-500"
+                      } group-hover:text-white dark:group-hover:text-black`}
                     >
                       Select File
                     </span>
@@ -1028,7 +1037,7 @@ const UploadCSV = () => {
               </div>
             </div>
 
-            <div className="mt-4 flex items-center gap-2 text-xs text-gray-500 bg-white/5 p-3 rounded-lg border border-white/5">
+            <div className="mt-4 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-500 bg-gray-100 dark:bg-white/5 p-3 rounded-lg border border-gray-300 dark:border-white/5">
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
                   uploadMode === "ai" ? "bg-purple-500" : "bg-emerald-500"
@@ -1092,21 +1101,21 @@ const UploadCSV = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-gray-900 border border-white/10 rounded-2xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto"
+                className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-white/10 rounded-2xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold text-white">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                     Preview AI-Parsed Questions
                   </h2>
                   <button
                     onClick={() => setShowPreview(false)}
-                    className="text-gray-400 hover:text-white"
+                    className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                   >
                     <X size={24} />
                   </button>
                 </div>
 
-                <p className="text-gray-400 mb-6">
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Found {parsedQuestions.length} questions. Review and confirm.
                 </p>
 
@@ -1114,32 +1123,34 @@ const UploadCSV = () => {
                   {parsedQuestions.slice(0, 5).map((q, idx) => (
                     <div
                       key={idx}
-                      className="bg-white/5 border border-white/10 rounded-xl p-4"
+                      className="bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl p-4"
                     >
                       <div className="flex items-start gap-3">
-                        <span className="text-emerald-400 font-bold">
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                           {idx + 1}.
                         </span>
                         <div className="flex-1">
-                          <p className="text-white mb-3">{q.questionText}</p>
+                          <p className="text-gray-900 dark:text-white mb-3">
+                            {q.questionText}
+                          </p>
                           <div className="grid grid-cols-2 gap-2 text-sm">
                             {["A", "B", "C", "D"].map((letter) => (
                               <div
                                 key={letter}
                                 className={`p-2 rounded ${
                                   q.correctAnswer === letter
-                                    ? "bg-emerald-500/20 border border-emerald-500/50"
-                                    : "bg-white/5"
+                                    ? "bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-500/50"
+                                    : "bg-gray-50 dark:bg-white/5"
                                 }`}
                               >
-                                <span className="font-bold text-gray-400">
+                                <span className="font-bold text-gray-600 dark:text-gray-400">
                                   {letter}:
                                 </span>{" "}
                                 {q[`option${letter}`]}
                               </div>
                             ))}
                           </div>
-                          <div className="mt-2 text-xs text-gray-500">
+                          <div className="mt-2 text-xs text-gray-600 dark:text-gray-500">
                             Level: {q.questionLevel} | Correct:{" "}
                             {q.correctAnswer}
                           </div>
@@ -1148,7 +1159,7 @@ const UploadCSV = () => {
                     </div>
                   ))}
                   {parsedQuestions.length > 5 && (
-                    <p className="text-center text-gray-500 text-sm">
+                    <p className="text-center text-gray-600 dark:text-gray-500 text-sm">
                       ... and {parsedQuestions.length - 5} more questions
                     </p>
                   )}
@@ -1157,7 +1168,7 @@ const UploadCSV = () => {
                 <div className="flex gap-4">
                   <button
                     onClick={() => setShowPreview(false)}
-                    className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:bg-white/10 transition-all"
+                    className="flex-1 py-3 bg-gray-200 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-white/10 transition-all"
                   >
                     Cancel
                   </button>

@@ -133,7 +133,7 @@ const DashboardHome = () => {
   };
 
   return (
-    <div className="min-h-screen rounded-2xl text-white bg-[radial-linear(ellipse_at_top,var(--tw-linear-stops))] from-emerald-900/20 via-[#050505] to-[#050505]">
+    <div className="min-h-screen rounded-2xl text-gray-900 dark:text-white bg-gray-50 dark:bg-[radial-linear(ellipse_at_top,var(--tw-linear-stops))] dark:from-emerald-900/20 dark:via-[#050505] dark:to-[#050505]">
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -142,10 +142,13 @@ const DashboardHome = () => {
       >
         <motion.div variants={itemVariants} className="mb-10 relative">
           <div className="absolute -top-10 -left-10 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl"></div>
-          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-linear-to-r from-white to-gray-400">
-            Welcome back, <span className="text-emerald-400">{user?.name}</span>
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-linear-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+            Welcome back,{" "}
+            <span className="text-emerald-600 dark:text-emerald-400">
+              {user?.name}
+            </span>
           </h2>
-          <p className="text-gray-400 mt-2 flex items-center gap-2">
+          <p className="text-gray-600 dark:text-gray-400 mt-2 flex items-center gap-2">
             <Sparkles size={16} className="text-emerald-500" />
             Manage your assessment protocols
           </p>
@@ -158,7 +161,7 @@ const DashboardHome = () => {
           {stats.map((stat, index) => (
             <div
               key={index}
-              className={`group relative bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl transition-all duration-300 hover:bg-white/[0.07] hover:transform hover:-translate-y-1 ${stat.border}`}
+              className={`group relative bg-white dark:bg-white/5 backdrop-blur-xl  dark:border-white/10 p-6 rounded-2xl transition-all duration-300 hover:bg-gray-50 dark:hover:bg-white/[0.07] hover:transform hover:-translate-y-1 hover:border-gray-300 dark:${stat.border} shadow-sm hover:shadow-md`}
             >
               <div
                 className={`absolute inset-0 bg-linear-to-br ${stat.color} rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
@@ -166,17 +169,17 @@ const DashboardHome = () => {
 
               <div className="relative z-10 flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-400">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                     {stat.title}
                   </p>
-                  <h3 className="text-3xl font-bold text-white mt-2 font-mono tracking-tight">
+                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-2 font-mono tracking-tight">
                     {stat.value}
                   </h3>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                     {stat.description}
                   </p>
                 </div>
-                <div className="p-3 bg-white/5 rounded-xl border border-white/5 shadow-inner">
+                <div className="p-3 bg-gray-100 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/5 shadow-inner">
                   {stat.icon}
                 </div>
               </div>
@@ -187,72 +190,75 @@ const DashboardHome = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <motion.div
             variants={itemVariants}
-            className="bg-white/5 backdrop-blur-md rounded-3xl p-8 border border-white/10 relative overflow-hidden"
+            className="bg-white dark:bg-white/5 backdrop-blur-md rounded-3xl p-8 border border-gray-200 dark:border-white/10 relative overflow-hidden shadow-sm"
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
 
-            <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-3">
-              <Activity className="text-emerald-400" /> Quick Actions
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+              <Activity className="text-emerald-600 dark:text-emerald-400" />{" "}
+              Quick Actions
             </h3>
 
             <div className="space-y-4">
               <button
                 onClick={() => navigate("/admin/upload")}
-                className="w-full group relative flex items-center gap-4 p-4 rounded-xl border border-white/10 bg-white/2 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all duration-300"
+                className="w-full group relative flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/2 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-500/30 transition-all duration-300"
               >
-                <div className="p-3 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
+                <div className="p-3 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
                   <UploadCloud size={24} />
                 </div>
                 <div className="text-left flex-1">
-                  <p className="font-medium text-white group-hover:text-emerald-400 transition-colors">
+                  <p className="font-medium text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                     Upload New Questions
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600 dark:text-gray-500">
                     Deploy via CSV protocol
                   </p>
                 </div>
                 <ArrowRight
-                  className="text-gray-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all"
+                  className="text-gray-400 dark:text-gray-600 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:translate-x-1 transition-all"
                   size={20}
                 />
               </button>
 
               <button
                 onClick={() => navigate("/admin/papers")}
-                className="w-full group relative flex items-center gap-4 p-4 rounded-xl border border-white/10 bg-white/2 hover:bg-cyan-500/10 hover:border-cyan-500/30 transition-all duration-300"
+                className="w-full group relative flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/2 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 hover:border-cyan-300 dark:hover:border-cyan-500/30 transition-all duration-300"
               >
-                <div className="p-3 rounded-lg bg-cyan-500/10 text-cyan-400 group-hover:scale-110 transition-transform">
+                <div className="p-3 rounded-lg bg-cyan-100 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform">
                   <LayoutDashboard size={24} />
                 </div>
                 <div className="text-left flex-1">
-                  <p className="font-medium text-white group-hover:text-cyan-400 transition-colors">
+                  <p className="font-medium text-gray-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                     Manage My Papers
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600 dark:text-gray-500">
                     Edit your configurations
                   </p>
                 </div>
                 <ArrowRight
-                  className="text-gray-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all"
+                  className="text-gray-400 dark:text-gray-600 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 group-hover:translate-x-1 transition-all"
                   size={20}
                 />
               </button>
 
               <button
                 onClick={() => navigate("/admin/attempts")}
-                className="w-full group relative flex items-center gap-4 p-4 rounded-xl border border-white/10 bg-white/2 hover:bg-purple-500/10 hover:border-purple-500/30 transition-all duration-300"
+                className="w-full group relative flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/2 hover:bg-purple-50 dark:hover:bg-purple-500/10 hover:border-purple-300 dark:hover:border-purple-500/30 transition-all duration-300"
               >
-                <div className="p-3 rounded-lg bg-purple-500/10 text-purple-400 group-hover:scale-110 transition-transform">
+                <div className="p-3 rounded-lg bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
                   <Users size={24} />
                 </div>
                 <div className="text-left flex-1">
-                  <p className="font-medium text-white group-hover:text-purple-400 transition-colors">
+                  <p className="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                     View Attempts
                   </p>
-                  <p className="text-sm text-gray-500">Analyze performance</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-500">
+                    Analyze performance
+                  </p>
                 </div>
                 <ArrowRight
-                  className="text-gray-600 group-hover:text-purple-400 group-hover:translate-x-1 transition-all"
+                  className="text-gray-400 dark:text-gray-600 group-hover:text-purple-600 dark:group-hover:text-purple-400 group-hover:translate-x-1 transition-all"
                   size={20}
                 />
               </button>
@@ -261,14 +267,15 @@ const DashboardHome = () => {
 
           <motion.div
             variants={itemVariants}
-            className="bg-white/5 backdrop-blur-md rounded-3xl p-8 border border-white/10"
+            className="bg-white dark:bg-white/5 backdrop-blur-md rounded-3xl p-8 border border-gray-200 dark:border-white/10 shadow-sm"
           >
-            <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-3">
-              <Layers className="text-purple-400" /> My Recent Uploads
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+              <Layers className="text-purple-600 dark:text-purple-400" /> My
+              Recent Uploads
             </h3>
 
             {recentPapers.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-gray-500 border-2 border-dashed border-white/5 rounded-xl">
+              <div className="flex flex-col items-center justify-center py-12 text-gray-500 border-2 border-dashed border-gray-200 dark:border-white/5 rounded-xl">
                 <FileText size={40} className="mb-4 opacity-50" />
                 <p className="text-center">
                   No papers found
@@ -281,18 +288,18 @@ const DashboardHome = () => {
                 {recentPapers.map((paper) => (
                   <div
                     key={paper.id}
-                    className="group flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/5 hover:border-emerald-500/30 transition-all duration-300"
+                    className="group flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/5 hover:border-emerald-300 dark:hover:border-emerald-500/30 transition-all duration-300"
                   >
                     <div>
-                      <h4 className="font-medium text-gray-200 group-hover:text-emerald-400 transition-colors">
+                      <h4 className="font-medium text-gray-900 dark:text-gray-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                         {paper.testName}
                       </h4>
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                        <span className="text-xs text-gray-600 dark:text-gray-500 flex items-center gap-1">
                           <HelpCircle size={10} />{" "}
                           {paper.questions?.length || 0} Qs
                         </span>
-                        <span className="text-xs text-gray-500 border-l border-white/10 pl-3">
+                        <span className="text-xs text-gray-600 dark:text-gray-500 border-l border-gray-300 dark:border-white/10 pl-3">
                           {paper.makeTime} mins
                         </span>
                       </div>
@@ -300,8 +307,8 @@ const DashboardHome = () => {
                     <span
                       className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-semibold border ${
                         paper.testType === "physical"
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                          : "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                          ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-500/20"
+                          : "bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-300 dark:border-purple-500/20"
                       }`}
                     >
                       {paper.testType}
@@ -312,7 +319,7 @@ const DashboardHome = () => {
                 {questionPapers.length > 3 && (
                   <button
                     onClick={() => navigate("/admin/papers")}
-                    className="w-full mt-4 py-3 text-sm text-gray-400 hover:text-white border border-transparent hover:border-white/10 rounded-xl transition-all flex items-center justify-center gap-2 group"
+                    className="w-full mt-4 py-3 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-transparent hover:border-gray-300 dark:hover:border-white/10 rounded-xl transition-all flex items-center justify-center gap-2 group"
                   >
                     View All My Papers{" "}
                     <ArrowRight

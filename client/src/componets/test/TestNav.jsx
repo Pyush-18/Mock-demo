@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Moon, Sun } from "lucide-react";
 import React from "react";
 
 function TestNav({
@@ -6,12 +6,14 @@ function TestNav({
   handleSubmitTest,
   isSubmitting,
   currentTest,
+  showSuccessPopup,
+  testName,
   timeLeft,
   showPdfSidebar,
   setShowPdfSidebar,
+  isDarkMode,
+  setIsDarkMode,
 }) {
-  const testName = currentTest?.testName || "Chemistry Mock Test";
-
   const safeFormatTime = (seconds) => {
     if (typeof formatTime === "function") {
       return formatTime(seconds);
@@ -26,7 +28,7 @@ function TestNav({
   return (
     <nav className="test-nav">
       <div className="nav-left">
-        <h2 className="test-title">{testName}</h2>
+        <h2 className="test-title">{testName || "Mock Test"}</h2>
       </div>
 
       <div className="nav-right">
@@ -38,11 +40,39 @@ function TestNav({
         </div>
 
         <button
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          style={{
+            background: "transparent",
+            border: "1px solid var(--glass-border)",
+            borderRadius: "8px",
+            padding: "8px 12px",
+            cursor: "pointer",
+            fontSize: "1.2rem",
+            color: "var(--text-main)",
+            transition: "all 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.borderColor = "var(--primary-accent)";
+            e.target.style.transform = "scale(1.05)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.borderColor = "var(--glass-border)";
+            e.target.style.transform = "scale(1)";
+          }}
+        >
+          {isDarkMode ? <Moon size={18} /> : <Sun size={18} />}
+        </button>
+
+        <button
           className="submit-test-btn"
           onClick={handleSubmitTest}
-          disabled={isSubmitting}
+          disabled={isSubmitting || showSuccessPopup}
         >
-          {isSubmitting ? "Processing..." : "Submit Test"}
+          {isSubmitting
+            ? "Submitting..."
+            : showSuccessPopup
+            ? "Test Submitted"
+            : "Submit Test"}
         </button>
 
         <button

@@ -10,17 +10,23 @@ import {
   Zap,
   FolderPlus,
   CloudCheck,
+  BookAudioIcon,
+  TrendingUpDown,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../slices/authSlice";
 import toast from "react-hot-toast";
 import { motion } from "motion/react";
+import { useTheme } from "../../context/ThemeProvider";
 
 const Sidebar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, loading } = useSelector((state) => state.auth);
   const [loggingOut, setLoggingOut] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
     try {
@@ -53,6 +59,11 @@ const Sidebar = () => {
       icon: <FileText size={20} />,
     },
     {
+      path: "/admin/study-materials",
+      label: "Study Material",
+      icon: <BookAudioIcon size={20} />,
+    },
+    {
       path: "/admin/attempts",
       label: "Test Attempts",
       icon: <Users size={20} />,
@@ -60,13 +71,18 @@ const Sidebar = () => {
     {
       path: "/admin/categories",
       label: "Categories",
-      icon: < FolderPlus size={20} />, 
+      icon: <FolderPlus size={20} />,
     },
     {
       path: "/admin/student-approval",
       label: "Approve/Reject Students",
-      icon: < CloudCheck size={20} />, 
-    }
+      icon: <CloudCheck size={20} />,
+    },
+    {
+      path: "/admin/testimonials",
+      label: "Add Testimonials",
+      icon: <TrendingUpDown size={20} />,
+    },
   ];
 
   const sidebarVariants = {
@@ -88,18 +104,24 @@ const Sidebar = () => {
       initial="hidden"
       animate="visible"
       variants={sidebarVariants}
-      className=" left-0 top-0 h-full w-72 text-gray-300 flex flex-col justify-between border-r border-white/5 relative overflow-hidden"
+      className="left-0 top-0 h-full w-72 bg-white/80 dark:bg-transparent text-gray-700 dark:text-gray-300 flex flex-col justify-between border-r border-gray-200 dark:border-white/5 relative overflow-hidden backdrop-blur-xl"
     >
-      <div className="absolute top-0 left-0 w-full h-64 bg-[#4FFFB0] opacity-[0.03] blur-[80px] pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-64 h-64 bg-blue-500 opacity-[0.03] blur-[80px] pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-64 bg-emerald-400/10 dark:bg-[#4FFFB0]/3 opacity-50 dark:opacity-100 blur-[80px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-64 h-64 bg-blue-400/10 dark:bg-blue-500/3 opacity-50 dark:opacity-100 blur-[80px] pointer-events-none" />
 
       <div className="relative z-10">
         <div className="p-8 pb-4">
           <div className="flex items-center gap-2 mb-6">
             <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#4FFFB0] to-teal-600 flex items-center justify-center shadow-[0_0_15px_rgba(79,255,176,0.3)]">
-              <Zap size={18} className="text-black fill-black" />
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="hidden sm:block p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
+                title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+              >
+                {theme === "dark" ? <Moon size={18} /> : <Sun size={18} />}
+              </button>
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-wide">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-wide">
               ADMIN<span className="text-[#4FFFB0]">.PANEL</span>
             </h1>
           </div>
@@ -107,10 +129,20 @@ const Sidebar = () => {
           {user && (
             <motion.div
               variants={itemVariants}
-              className="mt-2 p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-md flex items-center gap-3 group transition-all duration-300 hover:bg-white/10 hover:border-white/10 hover:shadow-[0_0_20px_rgba(79,255,176,0.1)]"
+              className="mt-2 p-3 pr-5 rounded-2xl 
+      bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)] 
+      dark:bg-white/5 dark:border-white/10 dark:shadow-none
+      backdrop-blur-xl flex items-center gap-4 group cursor-pointer
+      transition-all duration-300 
+      hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:border-emerald-100 dark:hover:bg-white/10 dark:hover:border-white/20"
             >
               <div className="relative">
-                <div className="w-10 h-10 rounded-full bg-linear-to-tr from-gray-800 to-gray-700 flex items-center justify-center border border-white/10">
+                <div
+                  className="w-11 h-11 rounded-full 
+        bg-gray-50 border border-gray-100 
+        dark:bg-white/5 dark:border-white/10 
+        flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105"
+                >
                   {user.avatar ? (
                     <img
                       src={user.avatar}
@@ -118,21 +150,22 @@ const Sidebar = () => {
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
-                    <span className="text-[#4FFFB0] font-bold text-lg">
+                    <span className="text-emerald-500 dark:text-[#4FFFB0] font-bold text-lg">
                       {user.name?.charAt(0).toUpperCase()}
                     </span>
                   )}
                 </div>
-                <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#4FFFB0] rounded-full border border-[#020403] shadow-[0_0_8px_#4FFFB0]" />
+
+                <div className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white dark:border-[#1a1a1a] shadow-[0_0_8px_rgba(52,211,153,0.6)]"></div>
               </div>
 
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate group-hover:text-[#4FFFB0] transition-colors">
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <h4 className="text-[15px] font-bold text-gray-800 dark:text-gray-100 truncate leading-tight group-hover:text-emerald-600 dark:group-hover:text-[#4FFFB0] transition-colors">
                   {user.name}
-                </p>
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">
+                </h4>
+                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-0.5">
                   {user.role === "superadmin" ? "Super Admin" : user.role}
-                </p>
+                </span>
               </div>
             </motion.div>
           )}
@@ -147,7 +180,7 @@ const Sidebar = () => {
                 `relative group flex items-center gap-3 p-3.5 rounded-xl transition-all duration-300 overflow-hidden ${
                   isActive
                     ? "text-[#020403] font-semibold"
-                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5"
                 }`
               }
             >
@@ -190,17 +223,17 @@ const Sidebar = () => {
         </nav>
       </div>
 
-      <div className="p-4 border-t border-white/5 relative z-10">
+      <div className="p-4 border-t border-gray-200 dark:border-white/5 relative z-10">
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleLogout}
           disabled={loggingOut || loading}
-          className="w-full flex items-center justify-center gap-2 p-3.5 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-red-500/10 hover:border-red-500/30 transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 p-3.5 rounded-xl border border-gray-300 dark:border-white/10 bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-300 dark:hover:border-red-500/30 transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <LogOut
             size={18}
-            className="group-hover:text-red-400 transition-colors"
+            className="group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors"
           />
           <span className="font-medium tracking-wide">
             {loggingOut ? "Disconnecting..." : "Disconnect"}
@@ -208,7 +241,7 @@ const Sidebar = () => {
         </motion.button>
 
         <div className="mt-4 text-center">
-          <p className="text-[10px] text-gray-600 uppercase tracking-widest font-semibold">
+          <p className="text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-semibold">
             System v2.4.0
           </p>
         </div>

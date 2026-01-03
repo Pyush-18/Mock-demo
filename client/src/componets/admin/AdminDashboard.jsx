@@ -8,6 +8,8 @@ import QuestionPapers from "./QuestionPapers";
 import TestAttempts from "./TestAttempts";
 import CategoryManagement from "./CategoryManagement";
 import RegistrationRequestsDashboard from "./RegistrationRequestsDashboard";
+import StudyMaterialManagement from "./StudyMaterialManagement";
+import TestimonialManagement from "./TestimonialManagement";
 
 const AdminDashboard = () => {
   const location = useLocation();
@@ -15,14 +17,14 @@ const AdminDashboard = () => {
   const noisePattern = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`;
 
   return (
-    <div className="flex h-screen w-full bg-[#050505] text-white overflow-hidden relative selection:bg-emerald-500/30">
+    <div className="flex h-screen w-full bg-gray-50 dark:bg-[#050505] text-gray-900 dark:text-white overflow-hidden relative selection:bg-emerald-500/30">
       <div
         className="absolute inset-0 z-0 pointer-events-none opacity-20 mix-blend-overlay"
         style={{ backgroundImage: noisePattern }}
       />
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-600/20 rounded-full blur-[120px] pointer-events-none z-0 mix-blend-screen" />
-      <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none z-0 mix-blend-screen" />
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-emerald-900/10 rounded-full blur-[100px] pointer-events-none z-0" />
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-600/20 dark:bg-emerald-600/20 rounded-full blur-[120px] pointer-events-none z-0 mix-blend-screen" />
+      <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-500/10 dark:bg-teal-500/10 rounded-full blur-[120px] pointer-events-none z-0 mix-blend-screen" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-emerald-900/10 dark:bg-emerald-900/10 rounded-full blur-[100px] pointer-events-none z-0" />
 
       <div className="relative z-20 hidden md:block shrink-0 h-full">
         <Sidebar />
@@ -59,6 +61,14 @@ const AdminDashboard = () => {
                 }
               />
               <Route
+                path="study-materials"
+                element={
+                  <PageWrapper>
+                    <StudyMaterialManagement />
+                  </PageWrapper>
+                }
+              />
+              <Route
                 path="attempts"
                 element={
                   <PageWrapper>
@@ -79,6 +89,14 @@ const AdminDashboard = () => {
                 element={
                   <PageWrapper>
                     <RegistrationRequestsDashboard />
+                  </PageWrapper>
+                }
+              />
+              <Route
+                path="testimonials"
+                element={
+                  <PageWrapper>
+                    <TestimonialManagement />
                   </PageWrapper>
                 }
               />

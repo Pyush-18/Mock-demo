@@ -4,6 +4,7 @@ import AboutPage from "../componets/AboutPage";
 import Pricing from "../componets/subscription-model/Pricing";
 import ContactPage from "../componets/ContactPage";
  import AppLayout from "../layout/AppLayout";
+import Testimonials from "../componets/Testimonials";
 
 const Home = () => {
 
@@ -14,6 +15,9 @@ const Home = () => {
       </div>
       <div id="test">
         <GetAllTest/>
+      </div>
+      <div id="testimonial">
+        <Testimonials/>
       </div>
       <div id="about">
         <AboutPage />

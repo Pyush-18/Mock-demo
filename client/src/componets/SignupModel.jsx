@@ -111,33 +111,38 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleDirectSignup = async () => {
-  if (!formData.name || !formData.email || !formData.password) {
-    toast.error("Please fill in all fields");
-    return;
-  }
+    if (!formData.name || !formData.email || !formData.password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
 
-  if (formData.password.length < 6) {
-    toast.error("Password must be at least 6 characters");
-    return;
-  }
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
 
-  try {
-    const registerData = {
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      role: "student",
-      createdBy: null,
-      registrationCode: null,
-    };
-    
-    await dispatch(register(registerData)).unwrap();
-    toast.success("Account created! You can now login and access demo tests.");
-  } catch (error) {
-    const errorMessage = typeof error === 'string' ? error : error?.message || "Registration failed";
-    toast.error(errorMessage);
-  }
-};
+    try {
+      const registerData = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: "student",
+        createdBy: null,
+        registrationCode: null,
+      };
+
+      await dispatch(register(registerData)).unwrap();
+      toast.success(
+        "Account created! You can now login and access demo tests."
+      );
+    } catch (error) {
+      const errorMessage =
+        typeof error === "string"
+          ? error
+          : error?.message || "Registration failed";
+      toast.error(errorMessage);
+    }
+  };
 
   const handleSubmitRequest = async () => {
     const codeToVerify = formData.registrationCode;
@@ -224,7 +229,7 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
       toast.success("Account created! You can now login.");
       dispatch(clearVerifiedAdmin());
     } catch (error) {
-      console.log("error in signup model ", error)
+      console.log("error in signup model ", error);
       const errorMessage =
         typeof error === "string"
           ? error
@@ -244,10 +249,10 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
   if (!signupMode) {
     return (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 animate-fadeIn p-4">
-        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl shadow-2xl w-full max-w-[500px] overflow-hidden relative animate-slideUp">
+        <div className="bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl shadow-2xl w-full max-w-[500px] overflow-hidden relative animate-slideUp">
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 text-gray-400 hover:text-[#10b981] text-2xl font-bold transition-all z-10"
+            className="absolute top-6 right-6 text-gray-600 dark:text-gray-400 hover:text-[#10b981] dark:hover:text-[#10b981] text-2xl font-bold transition-all z-10"
           >
             <X size={18} />
           </button>
@@ -258,12 +263,14 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                 <div className="w-9 h-9 bg-[#10b981] rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-lg">C</span>
                 </div>
-                <span className="text-white font-semibold text-lg">ChemT</span>
+                <span className="text-gray-900 dark:text-white font-semibold text-lg">
+                  ChemT
+                </span>
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 Choose Signup Method
               </h2>
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Select how you'd like to create your account
               </p>
             </div>
@@ -271,17 +278,17 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
             <div className="space-y-4">
               <button
                 onClick={() => setSignupMode("direct")}
-                className="w-full p-5 bg-[#0f0f0f] border-2 border-[#2a2a2a] hover:border-[#10b981] rounded-xl transition-all group text-left"
+                className="w-full p-5 bg-gray-50 dark:bg-[#0f0f0f] border-2 border-gray-200 dark:border-[#2a2a2a] hover:border-[#10b981] dark:hover:border-[#10b981] rounded-xl transition-all group text-left"
               >
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-[#10b981]/10 rounded-lg flex items-center justify-center group-hover:bg-[#10b981]/20 transition-all">
                     <User className="text-[#10b981]" size={24} />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-white font-semibold text-lg mb-1">
+                    <h3 className="text-gray-900 dark:text-white font-semibold text-lg mb-1">
                       Direct Signup
                     </h3>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
                       Sign up instantly and access demo tests immediately
                     </p>
                     <p className="text-[#10b981] text-xs mt-2 font-medium">
@@ -293,20 +300,23 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
 
               <button
                 onClick={() => setSignupMode("institute")}
-                className="w-full p-5 bg-[#0f0f0f] border-2 border-[#2a2a2a] hover:border-[#10b981] rounded-xl transition-all group text-left"
+                className="w-full p-5 bg-gray-50 dark:bg-[#0f0f0f] border-2 border-gray-200 dark:border-[#2a2a2a] hover:border-[#10b981] dark:hover:border-[#10b981] rounded-xl transition-all group text-left"
               >
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center group-hover:bg-blue-500/20 transition-all">
-                    <Building2 className="text-blue-400" size={24} />
+                    <Building2
+                      className="text-blue-500 dark:text-blue-400"
+                      size={24}
+                    />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-white font-semibold text-lg mb-1">
+                    <h3 className="text-gray-900 dark:text-white font-semibold text-lg mb-1">
                       Institute Registration
                     </h3>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
                       Register with your institute code for full access
                     </p>
-                    <p className="text-blue-400 text-xs mt-2 font-medium">
+                    <p className="text-blue-500 dark:text-blue-400 text-xs mt-2 font-medium">
                       ✓ Full test access • ✓ Requires approval
                     </p>
                   </div>
@@ -314,7 +324,7 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
               </button>
             </div>
 
-            <p className="text-center text-xs text-gray-400 mt-6">
+            <p className="text-center text-xs text-gray-600 dark:text-gray-400 mt-6">
               Already have an account?{" "}
               <span
                 onClick={() => {
@@ -335,10 +345,10 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
   if (signupMode === "direct") {
     return (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 animate-fadeIn p-4">
-        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl shadow-2xl w-full max-w-[500px] overflow-hidden relative animate-slideUp">
+        <div className="bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl shadow-2xl w-full max-w-[500px] overflow-hidden relative animate-slideUp">
           <button
             onClick={() => setSignupMode(null)}
-            className="absolute top-6 right-6 text-gray-400 hover:text-[#10b981] text-2xl font-bold transition-all z-10"
+            className="absolute top-6 right-6 text-gray-600 dark:text-gray-400 hover:text-[#10b981] dark:hover:text-[#10b981] text-2xl font-bold transition-all z-10"
           >
             <X size={18} />
           </button>
@@ -349,12 +359,14 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                 <div className="w-9 h-9 bg-[#10b981] rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-lg">C</span>
                 </div>
-                <span className="text-white font-semibold text-lg">ChemT</span>
+                <span className="text-gray-900 dark:text-white font-semibold text-lg">
+                  ChemT
+                </span>
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 Create Your Account
               </h2>
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Sign up and start with demo tests
               </p>
             </div>
@@ -367,10 +379,10 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                     size={18}
                   />
                   <div>
-                    <p className="text-white font-medium text-xs mb-0.5">
+                    <p className="text-gray-900 dark:text-white font-medium text-xs mb-0.5">
                       Instant Access
                     </p>
-                    <p className="text-gray-400 text-xs">
+                    <p className="text-gray-600 dark:text-gray-400 text-xs">
                       Start practicing with demo tests immediately after signup
                     </p>
                   </div>
@@ -378,7 +390,7 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
               </div>
 
               <div>
-                <label className="block text-gray-300 text-xs mb-1.5 font-medium">
+                <label className="block text-gray-700 dark:text-gray-300 text-xs mb-1.5 font-medium">
                   Full Name
                 </label>
                 <input
@@ -387,13 +399,13 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="John Doe"
-                  className="w-full px-3 py-2.5 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-white text-sm placeholder-gray-500 transition-all duration-200"
+                  className="w-full px-3 py-2.5 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-300 dark:border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-500 transition-all duration-200"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-gray-300 text-xs mb-1.5 font-medium">
+                <label className="block text-gray-700 dark:text-gray-300 text-xs mb-1.5 font-medium">
                   Email Address
                 </label>
                 <input
@@ -402,13 +414,13 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="you@example.com"
-                  className="w-full px-3 py-2.5 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-white text-sm placeholder-gray-500 transition-all duration-200"
+                  className="w-full px-3 py-2.5 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-300 dark:border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-500 transition-all duration-200"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-gray-300 text-xs mb-1.5 font-medium">
+                <label className="block text-gray-700 dark:text-gray-300 text-xs mb-1.5 font-medium">
                   Password
                 </label>
                 <input
@@ -417,7 +429,7 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Min. 6 characters"
-                  className="w-full px-3 py-2.5 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-white text-sm placeholder-gray-500 transition-all duration-200"
+                  className="w-full px-3 py-2.5 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-300 dark:border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-500 transition-all duration-200"
                   required
                 />
               </div>
@@ -437,22 +449,24 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
 
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[#2a2a2a]"></div>
+                  <div className="w-full border-t border-gray-300 dark:border-[#2a2a2a]"></div>
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="px-2 bg-[#1a1a1a] text-gray-400">OR</span>
+                  <span className="px-2 bg-white dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-400">
+                    OR
+                  </span>
                 </div>
               </div>
 
               <button
                 onClick={() => setSignupMode("institute")}
-                className="w-full py-2.5 bg-[#2a2a2a] hover:bg-[#333] text-white rounded-lg font-medium text-sm transition-all"
+                className="w-full py-2.5 bg-gray-200 dark:bg-[#2a2a2a] hover:bg-gray-300 dark:hover:bg-[#333] text-gray-900 dark:text-white rounded-lg font-medium text-sm transition-all"
               >
                 Sign up with Institute Code
               </button>
             </div>
 
-            <p className="text-center text-xs text-gray-400 mt-5">
+            <p className="text-center text-xs text-gray-600 dark:text-gray-400 mt-5">
               Already have an account?{" "}
               <span
                 onClick={() => {
@@ -472,19 +486,19 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 animate-fadeIn p-4">
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl shadow-2xl w-full max-w-[950px] overflow-hidden relative animate-slideUp">
+      <div className="bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl shadow-2xl w-full max-w-[950px] overflow-hidden relative animate-slideUp">
         <button
           onClick={() => {
             dispatch(clearVerifiedAdmin());
             setSignupMode(null);
           }}
-          className="absolute top-6 right-6 text-gray-400 hover:text-[#10b981] text-2xl font-bold transition-all z-10"
+          className="absolute top-6 right-6 text-gray-600 dark:text-gray-400 hover:text-[#10b981] dark:hover:text-[#10b981] text-2xl font-bold transition-all z-10"
         >
           <X size={18} />
         </button>
 
         <div className="flex flex-col md:flex-row max-h-[90vh]">
-          <div className="hidden md:flex md:w-[45%] bg-linear-to-br from-[#10b981]/10 to-[#059669]/5 p-10 items-center justify-center relative overflow-hidden">
+          <div className="hidden md:flex md:w-[45%] bg-linear-to-br from-emerald-100 to-teal-50 dark:from-[#10b981]/10 dark:to-[#059669]/5 p-10 items-center justify-center relative overflow-hidden">
             <img
               src="/sign_up.svg"
               alt="Join ChemT"
@@ -498,14 +512,16 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                 <div className="w-9 h-9 bg-[#10b981] rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-lg">C</span>
                 </div>
-                <span className="text-white font-semibold text-lg">ChemT</span>
+                <span className="text-gray-900 dark:text-white font-semibold text-lg">
+                  ChemT
+                </span>
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 {verificationStep === "approved"
                   ? "Complete Registration"
                   : "Request Access"}
               </h2>
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
                 {verificationStep === "approved"
                   ? "Create your password to complete registration"
                   : "Submit request for institute approval"}
@@ -517,14 +533,14 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                 <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                   <div className="flex items-start gap-2">
                     <AlertCircle
-                      className="text-blue-400 mt-0.5 shrink-0"
+                      className="text-blue-500 dark:text-blue-400 mt-0.5 shrink-0"
                       size={18}
                     />
                     <div>
-                      <p className="text-white font-medium text-xs mb-0.5">
+                      <p className="text-gray-900 dark:text-white font-medium text-xs mb-0.5">
                         Institute Verification Required
                       </p>
-                      <p className="text-gray-400 text-xs">
+                      <p className="text-gray-600 dark:text-gray-400 text-xs">
                         Enter details and code. Admin will review your request.
                       </p>
                     </div>
@@ -534,7 +550,7 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-gray-300 text-xs mb-1.5 font-medium">
+                      <label className="block text-gray-700 dark:text-gray-300 text-xs mb-1.5 font-medium">
                         Full Name
                       </label>
                       <input
@@ -543,12 +559,12 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                         value={formData.name}
                         onChange={handleChange}
                         placeholder="John Doe"
-                        className="w-full px-3 py-2.5 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-white text-sm placeholder-gray-500 transition-all duration-200"
+                        className="w-full px-3 py-2.5 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-300 dark:border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-500 transition-all duration-200"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-300 text-xs mb-1.5 font-medium">
+                      <label className="block text-gray-700 dark:text-gray-300 text-xs mb-1.5 font-medium">
                         Email Address
                       </label>
                       <input
@@ -557,14 +573,14 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                         value={formData.email}
                         onChange={handleChange}
                         placeholder="you@example.com"
-                        className="w-full px-3 py-2.5 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-white text-sm placeholder-gray-500 transition-all duration-200"
+                        className="w-full px-3 py-2.5 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-300 dark:border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-500 transition-all duration-200"
                         required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-gray-300 text-xs mb-1.5 font-medium">
+                    <label className="block text-gray-700 dark:text-gray-300 text-xs mb-1.5 font-medium">
                       Registration Code
                     </label>
                     <input
@@ -573,11 +589,11 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                       value={formData.registrationCode}
                       onChange={handleChange}
                       placeholder="Enter code (e.g., ABC123XY)"
-                      className="w-full px-3 py-2.5 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-white text-sm placeholder-gray-500 transition-all duration-200 uppercase"
+                      className="w-full px-3 py-2.5 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-300 dark:border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:border-transparent text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-500 transition-all duration-200 uppercase"
                       maxLength={8}
                       required
                     />
-                    <p className="text-xs text-gray-500 mt-1.5">
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1.5">
                       Contact your institute administrator to obtain a code.
                     </p>
                   </div>
@@ -602,27 +618,30 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
             {verificationStep === "pending" && (
               <div className="space-y-5">
                 <div className="p-5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-center">
-                  <Clock className="text-yellow-400 mx-auto mb-3" size={42} />
-                  <h3 className="text-white font-semibold text-lg mb-2">
+                  <Clock
+                    className="text-yellow-500 dark:text-yellow-400 mx-auto mb-3"
+                    size={42}
+                  />
+                  <h3 className="text-gray-900 dark:text-white font-semibold text-lg mb-2">
                     Awaiting Approval
                   </h3>
-                  <p className="text-gray-400 text-sm mb-3">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
                     Your request has been submitted. Admin will review shortly.
                   </p>
                   {verifiedAdmin && (
-                    <div className="bg-[#0f0f0f] p-3 rounded-lg mb-3">
+                    <div className="bg-gray-50 dark:bg-[#0f0f0f] p-3 rounded-lg mb-3">
                       <p className="text-[#10b981] font-medium text-sm">
                         {verifiedAdmin.instituteName}
                       </p>
-                      <p className="text-gray-500 text-xs mt-1">
+                      <p className="text-gray-500 dark:text-gray-500 text-xs mt-1">
                         Code: {formData.registrationCode}
                       </p>
                     </div>
                   )}
-                  <p className="text-xs text-gray-500 mb-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mb-3">
                     You'll receive an email with a link once approved.
                   </p>
-                  <p className="text-xs text-emerald-400 font-medium">
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                     ✓ Email: {formData.email}
                   </p>
                 </div>
@@ -630,7 +649,7 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="w-full py-2.5 bg-[#2a2a2a] hover:bg-[#333] text-white rounded-lg font-medium text-sm transition-all"
+                  className="w-full py-2.5 bg-gray-200 dark:bg-[#2a2a2a] hover:bg-gray-300 dark:hover:bg-[#333] text-gray-900 dark:text-white rounded-lg font-medium text-sm transition-all"
                 >
                   Try Different Code
                 </button>
@@ -646,13 +665,13 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                       size={18}
                     />
                     <div className="flex-1">
-                      <p className="text-white font-medium text-xs mb-0.5">
+                      <p className="text-gray-900 dark:text-white font-medium text-xs mb-0.5">
                         ✓ Request Approved
                       </p>
                       <p className="text-[#10b981] font-semibold text-sm">
                         {verifiedAdmin.instituteName}
                       </p>
-                      <p className="text-gray-400 text-xs mt-1">
+                      <p className="text-gray-600 dark:text-gray-400 text-xs mt-1">
                         Create your password to complete registration
                       </p>
                     </div>
@@ -662,7 +681,7 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-gray-300 text-xs mb-1.5 font-medium">
+                      <label className="block text-gray-700 dark:text-gray-300 text-xs mb-1.5 font-medium">
                         Full Name
                       </label>
                       <input
@@ -670,12 +689,12 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                         type="text"
                         value={formData.name}
                         onChange={handleChange}
-                        className="w-full px-3 py-2.5 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#10b981]"
+                        className="w-full px-3 py-2.5 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-300 dark:border-[#2a2a2a] rounded-lg text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#10b981]"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-300 text-xs mb-1.5 font-medium">
+                      <label className="block text-gray-700 dark:text-gray-300 text-xs mb-1.5 font-medium">
                         Email Address
                       </label>
                       <input
@@ -683,7 +702,7 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                         type="email"
                         value={formData.email}
                         onChange={handleChange}
-                        className="w-full px-3 py-2.5 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg text-white text-sm"
+                        className="w-full px-3 py-2.5 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-300 dark:border-[#2a2a2a] rounded-lg text-gray-900 dark:text-white text-sm"
                         required
                         readOnly
                       />
@@ -691,7 +710,7 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                   </div>
 
                   <div>
-                    <label className="block text-gray-300 text-xs mb-1.5 font-medium">
+                    <label className="block text-gray-700 dark:text-gray-300 text-xs mb-1.5 font-medium">
                       Create Password
                     </label>
                     <input
@@ -700,7 +719,7 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="Min. 6 characters"
-                      className="w-full px-3 py-2.5 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] text-white text-sm placeholder-gray-500"
+                      className="w-full px-3 py-2.5 bg-gray-50 dark:bg-[#0f0f0f] border border-gray-300 dark:border-[#2a2a2a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981] text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-500"
                       required
                     />
                   </div>
@@ -717,7 +736,7 @@ const SignupModal = ({ setShowLogin, setShowSignup, onClose }) => {
               </div>
             )}
 
-            <p className="text-center text-xs text-gray-400 mt-5">
+            <p className="text-center text-xs text-gray-600 dark:text-gray-400 mt-5">
               Already have an account?{" "}
               <span
                 onClick={() => {

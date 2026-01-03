@@ -1,22 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { motion } from "framer-motion";
-import { GraduationCap, Beaker, Zap, BookOpen, Target, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  GraduationCap,
+  Beaker,
+  Zap,
+  BookOpen,
+  Target,
+  ChevronRight,
+  ChevronDown,
+} from "lucide-react";
 import { getAllCategories } from "../slices/categorySlice";
 
-const ExamCategorySelector = ({ onCategorySelect }) => {
+const ExamCategorySelector = ({ onCategorySelect, filterByCategory }) => {
   const dispatch = useDispatch();
   const { categories, loading } = useSelector((state) => state.category);
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [expandedCategories, setExpandedCategories] = useState({});
+  const [expandedSubjects, setExpandedSubjects] = useState({});
 
   useEffect(() => {
     dispatch(getAllCategories());
   }, [dispatch]);
 
-  
   const getIconComponent = (iconName) => {
     const icons = {
       GraduationCap,
@@ -28,221 +36,208 @@ const ExamCategorySelector = ({ onCategorySelect }) => {
     return icons[iconName] || BookOpen;
   };
 
-  
-  const getColorScheme = (type) => {
-    const schemes = {
-      Competitive: {
-        color: "from-emerald-400 to-teal-500",
-        bgColor: "bg-emerald-500/10",
-        borderColor: "border-emerald-500/20",
-      },
-      School: {
-        color: "from-blue-400 to-indigo-500",
-        bgColor: "bg-blue-500/10",
-        borderColor: "border-blue-500/20",
-      },
-      Quiz: {
-        color: "from-orange-400 to-red-500",
-        bgColor: "bg-orange-500/10",
-        borderColor: "border-orange-500/20",
-      },
-    };
-    return schemes[type] || schemes.Competitive;
+  const filteredCategories = useMemo(() => {
+    if (!filterByCategory) return categories;
+
+    const normalizedFilter = filterByCategory.toLowerCase();
+
+    return categories.filter((category) => {
+      const normalizedCategoryName = category.name.toLowerCase();
+      return (
+        normalizedCategoryName.includes(normalizedFilter) ||
+        normalizedFilter.includes(normalizedCategoryName) ||
+        (normalizedFilter === "school" &&
+          category.type?.toLowerCase() === "school") ||
+        (normalizedFilter === "entrance" &&
+          category.type?.toLowerCase() === "competitive") ||
+        (normalizedFilter === "recruitment" &&
+          category.type?.toLowerCase() === "competitive")
+      );
+    });
+  }, [categories, filterByCategory]);
+
+  const toggleCategory = (categoryId) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [categoryId]: !prev[categoryId],
+    }));
+  };
+
+  const toggleSubject = (categoryId, subjectName) => {
+    const key = `${categoryId}-${subjectName}`;
+    setExpandedSubjects((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   };
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
     setSelectedSubject(null);
-    setSelectedSubcategory(null);
-    
-    
-    if (category.subjects && category.subjects.length > 0) {
-      const firstSubject = category.subjects[0];
-      setSelectedSubject(firstSubject);
-      
-      
-      if (onCategorySelect) {
-        onCategorySelect(category, firstSubject.name, null);
-      }
-    } else {
-      if (onCategorySelect) {
-        onCategorySelect(category, null, null);
-      }
-    }
+    onCategorySelect(category, null, null);
+    toggleCategory(category.id);
   };
 
-  const handleSubjectClick = (subject) => {
+  const handleSubjectClick = (category, subject) => {
+    setSelectedCategory(category);
     setSelectedSubject(subject);
-    setSelectedSubcategory(null);
-    
-    if (onCategorySelect && selectedCategory) {
-      
-      onCategorySelect(selectedCategory, subject.name, null);
-    }
+    onCategorySelect(category, subject.name, null);
   };
 
-  const handleSubcategoryClick = (subcategory) => {
-    setSelectedSubcategory(subcategory);
-    
-    if (onCategorySelect && selectedCategory && selectedSubject) {
-      
-      onCategorySelect(selectedCategory, selectedSubject.name, subcategory);
-    }
+  const handleSubcategoryClick = (category, subject, subcategory) => {
+    setSelectedCategory(category);
+    setSelectedSubject(subject);
+    onCategorySelect(category, subject.name, subcategory);
   };
 
-  if (loading && categories.length === 0) {
+  if (filteredCategories.length === 0) {
     return (
-      <div className="space-y-12">
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
-          <p className="text-gray-500 mt-4">Loading categories...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (categories.length === 0) {
-    return (
-      <div className="space-y-12">
-        <div className="text-center py-8 bg-white/5 rounded-2xl border border-white/10">
-          <BookOpen className="mx-auto mb-2 text-gray-500" size={48} />
-          <p className="text-gray-500">No categories available</p>
-        </div>
+      <div className="text-center py-8 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10">
+        <p className="text-gray-600 dark:text-gray-400">
+          {filterByCategory
+            ? `No categories found for "${filterByCategory}"`
+            : "No categories available"}
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-12">
-    
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-          <GraduationCap className="text-emerald-400" size={28} />
-          Choose Your Exam
-        </h2>
+    <div className="space-y-4">
+      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+        <span className="text-2xl">🎓</span>
+        Choose Your Exam
+      </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map((category, index) => {
-            const Icon = getIconComponent(category.icon);
-            const colorScheme = getColorScheme(category.type);
-            const isSelected = selectedCategory?.id === category.id;
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredCategories.map((category) => {
+          const isExpanded = expandedCategories[category.id];
+          const normalizedSubjects = category.subjects.map((subj) =>
+            typeof subj === "string" ? { name: subj, subcategories: [] } : subj
+          );
+          const Icon = getIconComponent(category.icon);
 
-            return (
-              <motion.button
-                key={category.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
+          return (
+            <div
+              key={category.id}
+              className="bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden hover:border-emerald-500/30 transition-all"
+            >
+              <button
                 onClick={() => handleCategoryClick(category)}
-                className={`group relative bg-[#0A0A0A]/80 backdrop-blur-xl border rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] ${
-                  isSelected
-                    ? `${colorScheme.borderColor} shadow-lg`
-                    : "border-white/5 hover:border-emerald-500/30"
+                className={`w-full p-4 flex items-center justify-between transition-all ${
+                  selectedCategory?.id === category.id
+                    ? "bg-emerald-500/10 border-b border-emerald-500/20"
+                    : "hover:bg-gray-50 dark:hover:bg-white/5"
                 }`}
               >
-                <div className="absolute inset-0 bg-linear-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none" />
-
-                <div className="relative flex flex-col items-center text-center space-y-3">
-                  <div
-                    className={`w-16 h-16 rounded-xl ${colorScheme.bgColor} border ${colorScheme.borderColor} flex items-center justify-center transition-transform group-hover:scale-110`}
-                  >
-                    <Icon className="w-8 h-8 text-emerald-400" />
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
+                    <Icon className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
                   </div>
-
-                  <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
-                    {category.name}
-                  </h3>
-
-                  <span className="text-xs text-gray-400 font-medium">
-                    {category.type}
-                  </span>
-
-                  {isSelected && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-linear-to-r from-emerald-400 to-teal-500 rounded-full flex items-center justify-center"
-                    >
-                      <svg
-                        className="w-4 h-4 text-black"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={3}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </motion.div>
-                  )}
+                  <div className="text-left">
+                    <h4 className="font-bold text-gray-900 dark:text-white">
+                      {category.name}
+                    </h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {category.type}
+                    </p>
+                  </div>
                 </div>
-              </motion.button>
-            );
-          })}
-        </div>
+                <ChevronDown
+                  className={`text-gray-500 transition-transform ${
+                    isExpanded ? "rotate-180" : ""
+                  }`}
+                  size={20}
+                />
+              </button>
+
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="p-4 space-y-2 bg-gray-50 dark:bg-black/20">
+                      {normalizedSubjects.map((subject) => {
+                        const hasSubcategories =
+                          subject.subcategories &&
+                          subject.subcategories.length > 0;
+                        const subjectKey = `${category.id}-${subject.name}`;
+                        const isSubjectExpanded = expandedSubjects[subjectKey];
+
+                        return (
+                          <div key={subject.name} className="space-y-1">
+                            <button
+                              onClick={() => {
+                                if (hasSubcategories) {
+                                  toggleSubject(category.id, subject.name);
+                                } else {
+                                  handleSubjectClick(category, subject);
+                                }
+                              }}
+                              className={`w-full px-3 py-2 rounded-lg text-left flex items-center justify-between transition-all ${
+                                selectedSubject?.name === subject.name &&
+                                !isSubjectExpanded
+                                  ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+                                  : "hover:bg-white dark:hover:bg-white/5 text-gray-700 dark:text-gray-300"
+                              }`}
+                            >
+                              <span className="flex items-center gap-2 text-sm font-medium">
+                                <ChevronRight size={14} />
+                                {subject.name}
+                              </span>
+                              {hasSubcategories && (
+                                <ChevronDown
+                                  className={`text-gray-500 transition-transform ${
+                                    isSubjectExpanded ? "rotate-180" : ""
+                                  }`}
+                                  size={16}
+                                />
+                              )}
+                            </button>
+
+                            <AnimatePresence>
+                              {hasSubcategories && isSubjectExpanded && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="ml-6 space-y-1"
+                                >
+                                  {subject.subcategories.map((subcategory) => (
+                                    <button
+                                      key={subcategory}
+                                      onClick={() =>
+                                        handleSubcategoryClick(
+                                          category,
+                                          subject,
+                                          subcategory
+                                        )
+                                      }
+                                      className="w-full px-3 py-1.5 rounded-lg text-left hover:bg-teal-100 dark:hover:bg-teal-500/20 text-gray-600 dark:text-gray-400 hover:text-teal-700 dark:hover:text-teal-400 text-xs transition-all flex items-center gap-2"
+                                    >
+                                      <ChevronRight size={12} />
+                                      {subcategory}
+                                    </button>
+                                  ))}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
       </div>
-      {selectedCategory &&
-        selectedCategory.subjects &&
-        selectedCategory.subjects.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-              <BookOpen className="text-emerald-400" size={28} />
-              Select Subject
-            </h2>
-
-            <div className="flex flex-wrap gap-4">
-              {selectedCategory.subjects.map((subject, index) => (
-                <button
-                  key={subject.name || index}
-                  onClick={() => handleSubjectClick(subject)}
-                  className={`px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 border backdrop-blur-md ${
-                    selectedSubject?.name === subject?.name
-                      ? "bg-linear-to-r from-emerald-400 to-teal-500 text-black border-transparent shadow-[0_0_15px_rgba(52,211,153,0.3)]"
-                      : "bg-white/5 border-white/10 text-gray-400 hover:border-emerald-500/50 hover:text-white"
-                  }`}
-                >
-                  {subject.name}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-      {selectedSubject &&
-        selectedSubject.subcategories &&
-        selectedSubject.subcategories.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-              <ChevronRight className="text-emerald-400" size={28} />
-              Select Topic
-            </h2>
-
-            <div className="flex flex-wrap gap-3">
-              {selectedSubject.subcategories.map((subcategory, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleSubcategoryClick(subcategory)}
-                  className={`px-5 py-2.5 rounded-lg font-medium text-xs transition-all duration-300 border backdrop-blur-md ${
-                    selectedSubcategory === subcategory
-                      ? "bg-linear-to-r from-teal-400 to-cyan-500 text-black border-transparent shadow-[0_0_12px_rgba(20,184,166,0.3)]"
-                      : "bg-white/5 border-white/10 text-gray-400 hover:border-teal-500/50 hover:text-white"
-                  }`}
-                >
-                  {subcategory}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
     </div>
   );
 };

@@ -11,7 +11,6 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 
-
 const calculateStats = (attempts) => {
   if (attempts.length === 0) {
     return {
@@ -50,16 +49,13 @@ const calculateStats = (attempts) => {
   };
 };
 
-
 export const getTestHistory = createAsyncThunk(
   "dashboard/getTestHistory",
   async ({ userId, testType = "all" }, { rejectWithValue }) => {
     try {
-
       const attemptsRef = collection(db, "testAttempts");
       let querySnapshot;
 
-      
       if (testType && testType !== "all") {
         const q = query(
           attemptsRef,
@@ -77,7 +73,6 @@ export const getTestHistory = createAsyncThunk(
       for (const docSnapshot of querySnapshot.docs) {
         const data = docSnapshot.data();
 
-        
         let fullQuestions = [];
 
         if (data.testId) {
@@ -92,18 +87,20 @@ export const getTestHistory = createAsyncThunk(
           }
         }
 
-        
-        const questions = (data.answers || []).map((answer) => {
-          
-          const fullQuestion = fullQuestions[answer.questionIndex] || {};
+        const answersMap = {};
+        (data.answers || []).forEach((answer) => {
+          answersMap[answer.questionIndex] = answer;
+        });
+
+        const questions = fullQuestions.map((fullQuestion, index) => {
+          const answer = answersMap[index];
 
           return {
-            questionText:
-              answer.questionText || fullQuestion.questionText || "",
-            selectedAnswer: answer.selectedAnswer || "",
-            correctAnswer:
-              answer.correctAnswer || fullQuestion.correctAnswer || "",
-            isCorrect: answer.isCorrect || false,
+            questionText: fullQuestion.questionText || "",
+            selectedAnswer: answer ? answer.selectedAnswer || "" : "",
+            correctAnswer: fullQuestion.correctAnswer || "",
+            isCorrect: answer ? answer.isCorrect || false : false,
+            isAttempted: !!answer,
             options: fullQuestion.options || [],
             images: fullQuestion.images || [],
             explanation: fullQuestion.explanation || "",
@@ -128,7 +125,6 @@ export const getTestHistory = createAsyncThunk(
         });
       }
 
-      
       history.sort((a, b) => {
         const dateA = a.startedAt?.toDate
           ? a.startedAt.toDate()
@@ -136,7 +132,7 @@ export const getTestHistory = createAsyncThunk(
         const dateB = b.startedAt?.toDate
           ? b.startedAt.toDate()
           : new Date(b.startedAt || 0);
-        return dateB - dateA; 
+        return dateB - dateA;
       });
 
       return { history };
@@ -147,16 +143,13 @@ export const getTestHistory = createAsyncThunk(
   }
 );
 
-
 export const getPerformanceOverview = createAsyncThunk(
   "dashboard/getPerformanceOverview",
   async (userId, { rejectWithValue }) => {
     try {
-
       const attemptsRef = collection(db, "testAttempts");
       const q = query(attemptsRef, where("userId", "==", userId));
       const querySnapshot = await getDocs(q);
-
 
       const attempts = [];
       querySnapshot.forEach((doc) => {
@@ -211,7 +204,6 @@ export const getTestAttempts = createAsyncThunk(
   "dashboard/getTestAttempts",
   async ({ userId, testType }, { rejectWithValue }) => {
     try {
-
       const attemptsRef = collection(db, "testAttempts");
       let q;
 
@@ -234,7 +226,6 @@ export const getTestAttempts = createAsyncThunk(
 
       const querySnapshot = await getDocs(q);
 
-
       if (querySnapshot.empty) {
         return [];
       }
@@ -244,7 +235,6 @@ export const getTestAttempts = createAsyncThunk(
       for (const docSnapshot of querySnapshot.docs) {
         const attemptData = docSnapshot.data();
 
-        
         let testDetails = {};
         if (attemptData.testId) {
           try {
@@ -275,13 +265,13 @@ export const getTestAttempts = createAsyncThunk(
           totalQuestions: attemptData.totalQuestions || 0,
           timeSpent: attemptData.timeSpent || 0,
           date: attemptData.submittedAt?.toDate() || new Date(),
-          
+
           categoryName: testDetails.categoryName || null,
           subject: testDetails.subject || null,
           subcategory: testDetails.subcategory || null,
         });
       }
-      return attempts; 
+      return attempts;
     } catch (error) {
       console.error("❌ Error fetching test attempts:", error);
       return rejectWithValue(error.message);
@@ -289,12 +279,10 @@ export const getTestAttempts = createAsyncThunk(
   }
 );
 
-
 export const getTestAttemptById = createAsyncThunk(
   "dashboard/getTestAttemptById",
   async (attemptId, { rejectWithValue }) => {
     try {
-
       const attemptRef = doc(db, "testAttempts", attemptId);
       const attemptDoc = await getDoc(attemptRef);
 
@@ -304,7 +292,6 @@ export const getTestAttemptById = createAsyncThunk(
 
       const data = attemptDoc.data();
 
-      
       let fullQuestions = [];
 
       if (data.testId) {
@@ -319,24 +306,26 @@ export const getTestAttemptById = createAsyncThunk(
         }
       }
 
-      
-      const questions = (data.answers || []).map((answer) => {
-        
-        const fullQuestion = fullQuestions[answer.questionIndex] || {};
+      const answersMap = {};
+      (data.answers || []).forEach((answer) => {
+        answersMap[answer.questionIndex] = answer;
+      });
+
+      const questions = fullQuestions.map((fullQuestion, index) => {
+        const answer = answersMap[index];
 
         return {
-          questionText: answer.questionText || fullQuestion.questionText || "",
-          selectedAnswer: answer.selectedAnswer || "",
-          correctAnswer:
-            answer.correctAnswer || fullQuestion.correctAnswer || "",
-          isCorrect: answer.isCorrect || false,
+          questionText: fullQuestion.questionText || "",
+          selectedAnswer: answer ? answer.selectedAnswer || "" : "",
+          correctAnswer: fullQuestion.correctAnswer || "",
+          isCorrect: answer ? answer.isCorrect || false : false,
+          isAttempted: !!answer,
           options: fullQuestion.options || [],
           images: fullQuestion.images || [],
           explanation: fullQuestion.explanation || "",
           questionLevel: fullQuestion.questionLevel || "Medium",
         };
       });
-
 
       return {
         attemptId: attemptDoc.id,
@@ -360,12 +349,10 @@ export const getTestAttemptById = createAsyncThunk(
   }
 );
 
-
 export const getProgressOverTime = createAsyncThunk(
   "dashboard/getProgressOverTime",
   async ({ userId, testType = "all" }, { rejectWithValue }) => {
     try {
-
       const attemptsRef = collection(db, "testAttempts");
       let q = query(
         attemptsRef,
@@ -400,7 +387,6 @@ export const getProgressOverTime = createAsyncThunk(
         });
       });
 
-      
       const progressWithImprovement = progress.map((attempt, index) => {
         let improvement = 0;
         if (index > 0) {
@@ -447,12 +433,10 @@ export const getProgressOverTime = createAsyncThunk(
   }
 );
 
-
 export const getTestComparison = createAsyncThunk(
   "dashboard/getTestComparison",
   async (userId, { rejectWithValue }) => {
     try {
-
       const userAttemptsRef = collection(db, "testAttempts");
       const userQuery = query(userAttemptsRef, where("userId", "==", userId));
       const userSnapshot = await getDocs(userQuery);
@@ -461,7 +445,6 @@ export const getTestComparison = createAsyncThunk(
       userSnapshot.forEach((doc) => {
         userAttempts.push({ id: doc.id, ...doc.data() });
       });
-
 
       const userStatsMap = {};
       userAttempts.forEach((attempt) => {
@@ -587,7 +570,6 @@ const dashboardSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    
     builder
       .addCase(getTestHistory.pending, (state) => {
         state.loading = true;
@@ -602,7 +584,6 @@ const dashboardSlice = createSlice({
         state.error = action.payload;
       });
 
-    
     builder
       .addCase(getPerformanceOverview.pending, (state) => {
         state.loading = true;
@@ -617,7 +598,6 @@ const dashboardSlice = createSlice({
         state.error = action.payload;
       });
 
-    
     builder
       .addCase(getTestAttempts.pending, (state) => {
         state.loading = true;
@@ -633,7 +613,6 @@ const dashboardSlice = createSlice({
         state.testAttempts = [];
       });
 
-    
     builder
       .addCase(getProgressOverTime.pending, (state) => {
         state.loading = true;
@@ -648,7 +627,6 @@ const dashboardSlice = createSlice({
         state.error = action.payload;
       });
 
-    
     builder
       .addCase(getTestComparison.pending, (state) => {
         state.loading = true;

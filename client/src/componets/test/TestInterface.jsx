@@ -5,7 +5,13 @@ import TestNav from "./TestNav";
 import { useNavigate } from "react-router-dom";
 import Calculator from "./Calculator";
 import toast from "react-hot-toast";
-import { AlertOctagon, CheckCircle2, AlertTriangle, FileText } from "lucide-react";
+import {
+  AlertOctagon,
+  CheckCircle2,
+  AlertTriangle,
+  FileText,
+} from "lucide-react";
+import { useSelector } from "react-redux";
 
 const TestInterface = () => {
   const {
@@ -24,6 +30,7 @@ const TestInterface = () => {
     saveAnswerLocally,
     setCurrentQuestionIndex,
   } = useTest();
+  const { testName } = useSelector((state) => state.test);
 
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -38,6 +45,7 @@ const TestInterface = () => {
   const [showCalculator, setShowCalculator] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showPdfSidebar, setShowPdfSidebar] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const hasInitialized = useRef(false);
   const isChangingQuestion = useRef(false);
@@ -216,7 +224,16 @@ const TestInterface = () => {
     return "not-visited";
   };
 
+  const handlePopupClose = () => {
+    setShowSuccessPopup(false);
+    navigate("/dashboard");
+  };``
+
   const handleSubmitTest = useCallback(() => {
+    if (showSuccessPopup) {
+      handlePopupClose();
+      return;
+    }
     if (markedQuestions.size > 0) {
       toast(
         (t) => (
@@ -280,7 +297,7 @@ const TestInterface = () => {
     }
 
     setShowSubmitModal(true);
-  }, [markedQuestions, setShowSubmitModal]);
+  }, [markedQuestions, setShowSubmitModal, showSuccessPopup, handlePopupClose]);
   const handleConfirmSubmit = async () => {
     setIsSubmitting(true);
     try {
@@ -309,11 +326,6 @@ const TestInterface = () => {
       setIsSubmitting(false);
     }
   }, [testId, submitTest]);
-
-  const handlePopupClose = () => {
-    setShowSuccessPopup(false);
-    navigate("/dashboard");
-  };
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -352,17 +364,20 @@ const TestInterface = () => {
   }
 
   return (
-    <div className="test-interface">
+    <div className={`test-interface ${!isDarkMode ? "light-mode" : ""}`}>
       <TestNav
         formatTime={formatTime}
         handleSubmitTest={handleSubmitTest}
+        testName={testName}
         isSubmitting={isSubmitting}
         currentTest={{ totalQuestions, timeLimit }}
+        showSuccessPopup={showSuccessPopup}
         timeLeft={timeLeft}
         showPdfSidebar={showPdfSidebar}
         setShowPdfSidebar={setShowPdfSidebar}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
       />
-
       {fullScreenWarning && (
         <div className="warning-modal">
           <div className="warning-content">
@@ -377,18 +392,19 @@ const TestInterface = () => {
           </div>
         </div>
       )}
-
       <SuccessPopup />
       {showSubmitModal && (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-[#020617] border border-slate-800 rounded-2xl shadow-2xl shadow-cyan-500/10 overflow-hidden transform transition-all scale-100">
-            <div className="bg-slate-900/50 p-6 border-b border-slate-800 flex items-center gap-4">
-              <div className="h-12 w-12 rounded-full bg-cyan-500/10 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="h-6 w-6 text-cyan-400" />
+        <div className="fixed inset-0 z-9999 flex items-center justify-center px-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white dark:bg-[#020617] border border-gray-200 dark:border-slate-800 rounded-2xl shadow-2xl dark:shadow-cyan-500/10 overflow-hidden transform transition-all scale-100">
+            <div className="bg-gray-50/50 dark:bg-slate-900/50 p-6 border-b border-gray-100 dark:border-slate-800 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-full bg-cyan-100 dark:bg-cyan-500/10 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">Submit Test?</h3>
-                <p className="text-sm text-slate-400">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Submit Test?
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-slate-400">
                   Are you sure you want to finish?
                 </p>
               </div>
@@ -396,48 +412,48 @@ const TestInterface = () => {
 
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                  <p className="text-xs text-emerald-400 font-medium uppercase mb-1">
+                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider mb-1">
                     Answered
                   </p>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {answeredQuestions.size}{" "}
-                    <span className="text-sm text-slate-500 font-normal">
+                    <span className="text-sm text-gray-400 dark:text-slate-500 font-normal">
                       / {totalQuestions || 15}
                     </span>
                   </p>
                 </div>
 
-                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20">
-                  <p className="text-xs text-rose-400 font-medium uppercase mb-1">
+                <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20">
+                  <p className="text-[10px] text-rose-600 dark:text-rose-400 font-bold uppercase tracking-wider mb-1">
                     Unanswered
                   </p>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {(totalQuestions || 15) - answeredQuestions.size}
                   </p>
                 </div>
               </div>
 
-              <div className="text-sm text-slate-400 bg-slate-900 rounded-lg p-3 border border-slate-800 flex gap-2">
+              <div className="text-sm text-gray-600 dark:text-slate-400 bg-amber-50 dark:bg-slate-900 rounded-lg p-3 border border-amber-100 dark:border-slate-800 flex gap-2">
                 <AlertTriangle
                   size={16}
-                  className="text-amber-400 shrink-0 mt-0.5"
+                  className="text-amber-500 dark:text-amber-400 shrink-0 mt-0.5"
                 />
                 <span>Once submitted, you cannot change your answers.</span>
               </div>
             </div>
 
-            <div className="p-4 bg-slate-900/50 border-t border-slate-800 flex gap-3">
+            <div className="p-4 bg-gray-50/50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-slate-800 flex gap-3">
               <button
                 onClick={() => setShowSubmitModal(false)}
-                className="flex-1 py-3 rounded-xl border border-slate-700 text-slate-300 font-medium hover:bg-slate-800 transition-all"
+                className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 font-semibold hover:bg-gray-100 dark:hover:bg-slate-800 transition-all"
               >
                 Go Back
               </button>
               <button
                 onClick={handleConfirmSubmit}
                 disabled={isSubmitting}
-                className="flex-1 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-xl bg-cyan-600 dark:bg-cyan-500 hover:bg-cyan-700 dark:hover:bg-cyan-400 text-white dark:text-black font-bold shadow-lg shadow-cyan-600/20 dark:shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isSubmitting ? "Submitting..." : "Confirm Submit"}
               </button>
@@ -446,7 +462,6 @@ const TestInterface = () => {
         </div>
       )}
       {showCalculator && <Calculator />}
-
       <main className="test-main">
         <aside className="question-grid">
           <h3>Navigation Grid</h3>
@@ -656,7 +671,6 @@ const TestInterface = () => {
           </div>
         </aside>
       </main>
-
       <div className={`pdf-sidebar ${showPdfSidebar ? "open" : ""}`}>
         <div className="pdf-sidebar-header">
           <div className="pdf-header-content">
@@ -738,7 +752,6 @@ const TestInterface = () => {
           )}
         </div>
       </div>
-
       {showPdfSidebar && (
         <div
           className="pdf-backdrop"
